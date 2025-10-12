@@ -1,9 +1,16 @@
 import "@/styles/globals.css";
-
+import {
+	ClerkProvider,
+	SignInButton,
+	SignUpButton,
+	SignedIn,
+	SignedOut,
+	UserButton,
+} from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-
-import { TRPCReactProvider } from "@/trpc/react";
 
 export const metadata: Metadata = {
 	title: "Create T3 App",
@@ -20,10 +27,30 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<html lang="en" className={`${geist.variable}`}>
-			<body>
-				<TRPCReactProvider>{children}</TRPCReactProvider>
-			</body>
-		</html>
+		<ClerkProvider>
+			<html lang="en" className={`${geist.variable}`}>
+				<body>
+					<header className="flex h-16 items-center justify-end gap-4 p-4">
+						<SignedOut>
+							<SignInButton />
+							<SignUpButton>
+								<button
+									type="button"
+									className="h-10 cursor-pointer rounded-full bg-[#6c47ff] px-4 font-medium text-ceramic-white text-sm sm:h-12 sm:px-5 sm:text-base"
+								>
+									Sign Up
+								</button>
+							</SignUpButton>
+						</SignedOut>
+						<SignedIn>
+							<UserButton />
+						</SignedIn>
+					</header>
+					{children}
+					<Analytics />
+					<SpeedInsights />
+				</body>
+			</html>
+		</ClerkProvider>
 	);
 }
