@@ -3,7 +3,8 @@
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
-		"useIgnoreFile": true
+		"useIgnoreFile": true,
+		"defaultBranch": "main"
 	},
 	"files": { "ignoreUnknown": false, "ignore": [] },
 	"formatter": { "enabled": true },
@@ -22,5 +23,8 @@
 			},
 			"recommended": true
 		}
+	},
+	"javascript": {
+		"formatter": { "semicolons": "asNeeded", "quoteStyle": "single" }
 	}
 }
