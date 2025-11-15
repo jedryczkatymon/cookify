@@ -13,49 +13,76 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Recipe {
+  id          Int           @id @default(autoincrement())
+  slug        String           @unique @default(cuid())
+  name        String
+  description String?
+  tags        String[]      // e.g. ["wegetariańskie", "bezglutenowe"]
+  cuisine     String?        // e.g. "Kuchnia amerykańska"
+  category    String?        // e.g. "Kolacje", "Lunche"
+  servings    Int?            // base number of portions, e.g. 4
+  prepTime    Int?           // in minutes
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+  ingredients Ingredient[]
+  steps       Step[]
+  notes       String?
 
-    @@index([name])
+  createdBy   User            @relation(fields: [createdById], references: [clerkId])
+  createdById String
+
+  @@index([name])
+  uploads Upload[]
 }
 
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Step {
+  id        Int      @id @default(autoincrement())
+  order     Int
+  content   String
+  recipe    Recipe    @relation(fields: [recipeId], references: [id])
+  recipeId  Int
+}
+
+model Ingredient {
+  id         Int      @id @default(autoincrement())
+  name       String    // e.g. "chorizo"
+  amount     Float?    // numeric value, e.g. 150
+  unit       String?   // e.g. "g", "łyżki", "ml"
+  section    String?   // e.g. "Warzywa", "Zasmażka"
+  recipe     Recipe    @relation(fields: [recipeId], references: [id])
+  recipeId   Int
+}
+
+model Upload {
+  id         String    @id @default(cuid())
+  url        String
+  fileName   String    @unique
+  fileType   String
+  fileSize   Int
+  createdAt  DateTime  @default(now())
+  recipe     Recipe?   @relation(fields: [recipeId], references: [id])
+  recipeId   Int?
+  uploadedBy User      @relation(fields: [uploadedById], references: [clerkId])
+  uploadedById String
 }
 
 model User {
-    id            String    @id @default(cuid())
-    clerkId       String    @unique
-    firstName     String?
-    lastName      String?
-    username      String?   @unique
-    email         String?   @unique
-    phoneNumber   String?   @unique
-    imageUrl      String?
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
-    lastSignInAt  DateTime?
-    lastActivedAt DateTime?
-    legalAcceptedAt DateTime?
-    banned        Boolean   @default(false)
-    sessions      Session[]
-    posts         Post[]
-}
-
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
+  id            String    @id @default(cuid())
+  clerkId       String    @unique
+  firstName     String?
+  lastName      String?
+  username      String?   @unique
+  email         String?   @unique
+  phoneNumber   String?   @unique
+  imageUrl      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastSignInAt  DateTime?
+  lastActivedAt DateTime?
+  legalAcceptedAt DateTime?
+  banned        Boolean   @default(false)
+  recipes      Recipe[]
+  uploads      Upload[]
 }
