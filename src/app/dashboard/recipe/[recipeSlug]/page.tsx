@@ -1,5 +1,6 @@
 import { getUserRecipeBySlug } from '@/lib/prisma/getUserRecipes'
 import { notFound } from 'next/navigation'
+import type { Ingredient } from 'types/types'
 
 export default async function Recipe({
 	params,
@@ -27,7 +28,7 @@ export default async function Recipe({
 			<h2>Ingredients</h2>
 			{recipe.ingredients && recipe.ingredients.length > 0 ? (
 				<ul>
-					{recipe.ingredients.map((ing) => (
+					{recipe.ingredients.map((ing: Ingredient) => (
 						<li key={ing.id}>
 							{ing.amount ?? ''}
 							{ing.unit ? ` ${ing.unit}` : ''} — {ing.name}

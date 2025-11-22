@@ -1,88 +1,81 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "./generated"
+  engineType = "node"
 }
 
 datasource db {
-    provider = "postgresql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
 }
 
 model Recipe {
-  id          Int           @id @default(autoincrement())
-  slug        String           @unique @default(cuid())
+  id          Int          @id @default(autoincrement())
+  slug        String       @unique @default(cuid())
   name        String
   description String?
-  tags        String[]      // e.g. ["wegetariańskie", "bezglutenowe"]
-  cuisine     String?        // e.g. "Kuchnia amerykańska"
-  category    String?        // e.g. "Kolacje", "Lunche"
-  servings    Int?            // base number of portions, e.g. 4
-  prepTime    Int?           // in minutes
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  ingredients Ingredient[]
-  steps       Step[]
+  tags        String[]
+  cuisine     String?
+  category    String?
+  servings    Int?
+  prepTime    Int?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   notes       String?
-
-  createdBy   User            @relation(fields: [createdById], references: [clerkId])
   createdById String
+  ingredients Ingredient[]
+  createdBy   User         @relation(fields: [createdById], references: [clerkId])
+  steps       Step[]
+  uploads     Upload[]
 
   @@index([name])
-  uploads Upload[]
 }
 
 model Step {
-  id        Int      @id @default(autoincrement())
-  order     Int
-  content   String
-  recipe    Recipe    @relation(fields: [recipeId], references: [id])
-  recipeId  Int
+  id       Int    @id @default(autoincrement())
+  order    Int
+  content  String
+  recipeId Int
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
 }
 
 model Ingredient {
-  id         Int      @id @default(autoincrement())
-  name       String    // e.g. "chorizo"
-  amount     Float?    // numeric value, e.g. 150
-  unit       String?   // e.g. "g", "łyżki", "ml"
-  section    String?   // e.g. "Warzywa", "Zasmażka"
-  recipe     Recipe    @relation(fields: [recipeId], references: [id])
-  recipeId   Int
+  id       Int     @id @default(autoincrement())
+  name     String
+  amount   Float?
+  unit     String?
+  section  String?
+  recipeId Int
+  recipe   Recipe  @relation(fields: [recipeId], references: [id])
 }
 
 model Upload {
-  id         String    @id @default(cuid())
-  url        String
-  fileName   String    @unique
-  fileType   String
-  fileSize   Int
-  createdAt  DateTime  @default(now())
-  recipe     Recipe?   @relation(fields: [recipeId], references: [id])
-  recipeId   Int?
-  uploadedBy User      @relation(fields: [uploadedById], references: [clerkId])
+  id           String   @id @default(cuid())
+  url          String
+  fileName     String   @unique
+  fileType     String
+  fileSize     Int
+  createdAt    DateTime @default(now())
+  recipeId     Int?
   uploadedById String
+  recipe       Recipe?  @relation(fields: [recipeId], references: [id])
+  uploadedBy   User     @relation(fields: [uploadedById], references: [clerkId])
 }
 
 model User {
-  id            String    @id @default(cuid())
-  clerkId       String    @unique
-  firstName     String?
-  lastName      String?
-  username      String?   @unique
-  email         String?   @unique
-  phoneNumber   String?   @unique
-  imageUrl      String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  lastSignInAt  DateTime?
-  lastActivedAt DateTime?
+  id              String    @id @default(cuid())
+  email           String?   @unique
+  clerkId         String    @unique
+  banned          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  firstName       String?
+  imageUrl        String?
+  lastActivedAt   DateTime?
+  lastName        String?
+  lastSignInAt    DateTime?
   legalAcceptedAt DateTime?
-  banned        Boolean   @default(false)
-  recipes      Recipe[]
-  uploads      Upload[]
+  phoneNumber     String?   @unique
+  updatedAt       DateTime  @updatedAt
+  username        String?   @unique
+  recipes         Recipe[]
+  uploads         Upload[]
 }

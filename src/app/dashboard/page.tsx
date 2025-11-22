@@ -10,6 +10,7 @@ import {
 import { getUserRecipes } from '@/lib/prisma/getUserRecipes'
 import { FileXCorner } from 'lucide-react'
 import Link from 'next/link'
+import type { Recipe } from 'types/types'
 
 export default async function DashboardPage() {
 	const recipes = await getUserRecipes(['id', 'slug', 'name', 'prepTime'])
@@ -42,7 +43,7 @@ export default async function DashboardPage() {
 			) : (
 				<>
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{recipes.map((recipe) => (
+						{recipes.map((recipe: Recipe) => (
 							<Link key={recipe.id} href={`/dashboard/recipe/${recipe.slug}`}>
 								<Button
 									variant="outline"

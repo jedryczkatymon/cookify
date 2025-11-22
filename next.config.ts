@@ -3,9 +3,10 @@
  * for Docker builds.
  */
 import type { NextConfig } from 'next'
-import './src/env.js'
+import './src/lib/env.js'
 
 const nextConfig: NextConfig = {
+	serverExternalPackages: ['@prisma/client', 'prisma'],
 	images: {
 		remotePatterns: [
 			{

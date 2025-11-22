@@ -6,7 +6,7 @@
 		"useIgnoreFile": true,
 		"defaultBranch": "main"
 	},
-	"files": { "ignoreUnknown": false, "ignore": ["src/components/ui/**"] },
+	"files": { "ignoreUnknown": false, "ignore": ["src/components/ui/**", "prisma/generated/**"] },
 	"formatter": { "enabled": true },
 	"organizeImports": { "enabled": true },
 	"linter": {

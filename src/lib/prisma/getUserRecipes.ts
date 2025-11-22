@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/prisma/getCurrentUser'
-import type { Prisma } from '@prisma/client'
+import type { Prisma } from 'prisma/generated/browser'
 
 /**
  * Fetch recipes for the current user, with optional field selection.
