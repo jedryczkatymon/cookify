@@ -1,4 +1,3 @@
-// import { PrismaPg } from '@prisma/adapter-pg'
 import 'dotenv/config'
 import { env } from 'prisma/config'
 import { withAccelerate } from '@prisma/extension-accelerate'

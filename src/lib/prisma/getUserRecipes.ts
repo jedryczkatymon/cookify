@@ -52,6 +52,7 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 			...partialSelect,
 			ingredients: true,
 			steps: true,
+			tags: true
 		} as Prisma.RecipeSelect
 
 		return prisma.recipe.findFirst({
@@ -65,7 +66,7 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 	if (excludeFields && excludeFields.length > 0) {
 		const recipe = await prisma.recipe.findFirst({
 			where: { slug, createdById: user.clerkId },
-			include: { ingredients: true, steps: true },
+			include: { ingredients: true, steps: true, tags: true },
 		})
 		if (!recipe) return null
 
@@ -80,6 +81,6 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 	// Default: return full recipe including relations
 	return prisma.recipe.findFirst({
 		where: { slug, createdById: user.clerkId },
-		include: { ingredients: true, steps: true },
+		include: { ingredients: true, steps: true, tags: true },
 	})
 }

@@ -27,8 +27,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { H1, H2 } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, ChevronsUpDown } from 'lucide-react'
-import { type Resolver, useForm } from 'react-hook-form'
+import { Check, ChevronsUpDown, Plus, Minus } from 'lucide-react'
+import { type Resolver, useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -43,54 +43,36 @@ const formSchema = z.object({
 	),
 	prepTime: z.preprocess((v) => (v === '' ? undefined : Number(v)), z.number()),
 	notes: z.string().optional(),
-	amount: z.preprocess(
-		(v) => (v === '' ? undefined : Number(v)),
-		z.number().optional(),
-	),
-	unit: z.string().min(1).optional(),
-	product: z.string().min(1).optional(),
+	ingredients: z
+		.array(
+			z.object({
+				amount: z.preprocess(
+					(v) => (v === '' ? undefined : Number(v)),
+					z.number().optional(),
+				),
+				unit: z.string().optional(),
+				product: z.string().min(1),
+			}),
+		)
+		.min(1),
 	steps: z.string().min(1),
 })
 
 export default function RecipeForm() {
-	const languages = [
-		{
-			label: 'English',
-			value: 'en',
-		},
-		{
-			label: 'French',
-			value: 'fr',
-		},
-		{
-			label: 'German',
-			value: 'de',
-		},
-		{
-			label: 'Spanish',
-			value: 'es',
-		},
-		{
-			label: 'Portuguese',
-			value: 'pt',
-		},
-		{
-			label: 'Russian',
-			value: 'ru',
-		},
-		{
-			label: 'Japanese',
-			value: 'ja',
-		},
-		{
-			label: 'Korean',
-			value: 'ko',
-		},
-		{
-			label: 'Chinese',
-			value: 'zh',
-		},
+	const meals = [
+		'Breakfast',
+		'Second Breakfast',
+		'Brunch',
+		'Lunch',
+		'Dinner',
+		'Dessert',
+		'Snack',
+		'Appetizer',
+		'Beverage',
+		'Preworkout',
+		'Postworkout',
 	] as const
+
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema) as unknown as Resolver<
 			z.infer<typeof formSchema>
@@ -103,10 +85,13 @@ export default function RecipeForm() {
 			servings: undefined,
 			prepTime: undefined,
 			notes: '',
-			amount: undefined,
-			unit: '',
-			product: '',
+			ingredients: [{ amount: undefined, unit: '', product: '' }],
 		},
+	})
+
+	const { fields, append, remove } = useFieldArray({
+		control: form.control,
+		name: 'ingredients',
 	})
 
 	const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -187,6 +172,7 @@ export default function RecipeForm() {
 						</FormItem>
 					)}
 				/>
+
 				<FormField
 					control={form.control}
 					name="category"
@@ -204,38 +190,34 @@ export default function RecipeForm() {
 											)}
 											aria-haspopup="listbox"
 										>
-											{field.value
-												? languages.find(
-														(language) => language.value === field.value,
-													)?.label
-												: 'Select language'}
+											{field.value ? field.value : 'Select meal'}
 											<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 										</Button>
 									</FormControl>
 								</PopoverTrigger>
 								<PopoverContent className="w-[200px] p-0">
 									<Command>
-										<CommandInput placeholder="Search language..." />
+										<CommandInput placeholder="Search meal..." />
 										<CommandList>
-											<CommandEmpty>No language found.</CommandEmpty>
+											<CommandEmpty>No meal found.</CommandEmpty>
 											<CommandGroup>
-												{languages.map((language) => (
+												{meals.map((meal) => (
 													<CommandItem
-														value={language.label}
-														key={language.value}
+														value={meal}
+														key={meal}
 														onSelect={() => {
-															form.setValue('category', language.value)
+															form.setValue('category', meal)
 														}}
 													>
 														<Check
 															className={cn(
 																'mr-2 h-4 w-4',
-																language.value === field.value
+																meal === field.value
 																	? 'opacity-100'
 																	: 'opacity-0',
 															)}
 														/>
-														{language.label}
+														{meal}
 													</CommandItem>
 												))}
 											</CommandGroup>
@@ -291,61 +273,100 @@ export default function RecipeForm() {
 						/>
 					</div>
 				</div>
+
 				<H2>Ingredients</H2>
-				<div className="grid grid-cols-12 gap-4">
-					<div className="col-span-4">
-						<FormField
-							control={form.control}
-							name="amount"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Amount</FormLabel>
-									<FormControl>
-										<Input
-											placeholder="e.g 50"
-											type="number"
-											{...field}
-											value={field.value ?? ''}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</div>
+				<div className="space-y-4">
+					{fields.map((field, index) => (
+						<div key={field.id} className="grid grid-cols-12 items-end gap-4">
+							<div className="col-span-4">
+								<FormField
+									control={form.control}
+									name={`ingredients.${index}.amount` as const}
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Amount</FormLabel>
+											<FormControl>
+												<Input
+													placeholder="e.g 50"
+													type="number"
+													{...field}
+													value={field.value ?? ''}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 
-					<div className="col-span-4">
-						<FormField
-							control={form.control}
-							name="unit"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Unit</FormLabel>
-									<FormControl>
-										<Input placeholder="e.g grams" type="text" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</div>
+							<div className="col-span-4">
+								<FormField
+									control={form.control}
+									name={`ingredients.${index}.unit` as const}
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Unit</FormLabel>
+											<FormControl>
+												<Input
+													placeholder="e.g grams"
+													type="text"
+													{...field}
+													value={field.value ?? ''}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 
-					<div className="col-span-4">
-						<FormField
-							control={form.control}
-							name="product"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Product</FormLabel>
-									<FormControl>
-										<Input placeholder="e.g butter" type="text" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+							<div className="col-span-3">
+								<FormField
+									control={form.control}
+									name={`ingredients.${index}.product` as const}
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Product</FormLabel>
+											<FormControl>
+												<Input
+													placeholder="e.g butter"
+													type="text"
+													{...field}
+													value={field.value ?? ''}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+
+							<div className="col-span-1 flex justify-end">
+								<Button
+									type="button"
+									variant="ghost"
+									onClick={() => remove(index)}
+									aria-label={`Remove ingredient ${index + 1}`}
+								>
+									<Minus className="h-4 w-4" />
+								</Button>
+							</div>
+						</div>
+					))}
+
+					<div>
+						<Button
+							type="button"
+							onClick={() =>
+								append({ amount: undefined, unit: '', product: '' })
+							}
+						>
+							<Plus className="mr-2 h-4 w-4" />
+							Add ingredient
+						</Button>
 					</div>
 				</div>
+
 				<H2>Directions</H2>
 				<FormField
 					control={form.control}

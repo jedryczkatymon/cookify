@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import type { Ingredient, Tag } from 'types/types'
 
 export async function POST(req: Request) {
 	try {
@@ -17,7 +18,6 @@ export async function POST(req: Request) {
 			data: {
 				name: values.name,
 				description: values.description,
-				tags: values.tags ?? [],
 				category: values.category,
 				servings: values.servings,
 				prepTime: values.prepTime,
@@ -35,16 +35,41 @@ export async function POST(req: Request) {
 			},
 		})
 
-		// ----- INGREDIENT -----
-		if (values.product || values.amount || values.unit) {
-			await prisma.ingredient.create({
-				data: {
-					name: values.product ?? '',
-					amount: values.amount ?? null,
-					unit: values.unit ?? null,
+		// ----- INGREDIENTS (multiple) -----
+		if (Array.isArray(values.ingredients) && values.ingredients.length > 0) {
+			const ingredientsData = (values.ingredients as Ingredient[]).map(
+				(ing) => ({
+					name: (ing.product) ?? '',
+					amount: ing.amount ?? null,
+					unit: ing.unit ?? null,
 					recipeId: recipe.id,
-				},
+				}),
+			)
+
+			await prisma.ingredient.createMany({
+				data: ingredientsData,
 			})
+		}
+
+		// ----- TAGS -----
+		if (values.tags && values.tags.length > 0) {
+			const tagPromises = (values.tags as Tag[]).map((tagName) =>
+				prisma.tag.upsert({
+					where: { name: tagName },
+					update: {
+						recipe: {
+							connect: { id: recipe.id },
+						},
+					},
+					create: {
+						name: tagName,
+						recipe: {
+							connect: { id: recipe.id },
+						},
+					},
+				}),
+			)
+			await Promise.all(tagPromises)
 		}
 
 		return NextResponse.json({ recipe }, { status: 200 })

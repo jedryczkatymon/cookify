@@ -17,8 +17,8 @@ export interface User {
     lastActivedAt?: DateTime | null;
     legalAcceptedAt?: DateTime | null;
     banned: boolean;
-    recipes?: Recipe[]; // relations
-    uploads?: Upload[]; // relations
+    recipes: Recipe[]; // relations
+    uploads: Upload[]; // relations
 }
 
 export interface Recipe {
@@ -26,7 +26,7 @@ export interface Recipe {
     slug: string;
     name: string;
     description?: string | null;
-    tags: string[]; // e.g. ["wegetariańskie", "bezglutenowe"]
+    tags: Tag[]; // relation to Tag model
     cuisine?: string | null; // e.g. "Kuchnia amerykańska"
     category?: string | null; // e.g. "Kolacje", "Lunche"
     servings?: number | null;
@@ -41,6 +41,13 @@ export interface Recipe {
     uploads?: Upload[]; // relations
 }
 
+export interface Tag {
+    id: number;
+    name: string;
+    recipeId?: number | null;
+    recipe?: Recipe | null;
+}
+
 export interface Step {
     id: number;
     order: number;
@@ -51,7 +58,7 @@ export interface Step {
 
 export interface Ingredient {
     id: number;
-    name: string;
+    product: string;
     amount?: number | null;
     unit?: string | null;
     section?: string | null;

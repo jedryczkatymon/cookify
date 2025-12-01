@@ -13,7 +13,6 @@ model Recipe {
   slug        String       @unique @default(cuid())
   name        String
   description String?
-  tags        String[]
   cuisine     String?
   category    String?
   servings    Int?
@@ -22,12 +21,20 @@ model Recipe {
   updatedAt   DateTime     @updatedAt
   notes       String?
   createdById String
-  ingredients Ingredient[]
   createdBy   User         @relation(fields: [createdById], references: [clerkId])
   steps       Step[]
+  ingredients Ingredient[]
+  tags        Tag[]
   uploads     Upload[]
 
   @@index([name])
+}
+
+model Tag {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique
+  recipeId Int?
+  recipe  Recipe? @relation(fields: [recipeId], references: [id])
 }
 
 model Step {

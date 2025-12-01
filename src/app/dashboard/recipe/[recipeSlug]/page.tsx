@@ -1,6 +1,7 @@
 import { getUserRecipeBySlug } from '@/lib/prisma/getUserRecipes'
 import { notFound } from 'next/navigation'
-import type { Ingredient } from 'types/types'
+import type { Ingredient, Step } from 'types/types'
+import { H1, H2 } from '@/components/ui/typography'
 
 export default async function Recipe({
 	params,
@@ -17,42 +18,66 @@ export default async function Recipe({
 
 	return (
 		<div>
-			<h1>{recipe.name}</h1>
-			<p>Description: {recipe.description ?? '—'}</p>
-			<p>Cuisine: {recipe.cuisine ?? '—'}</p>
-			<p>Category: {recipe.category ?? '—'}</p>
-			<p>Servings: {recipe.servings ?? '—'}</p>
-			<p>Prep time: {recipe.prepTime ?? '—'}</p>
-			<p>Notes: {recipe.notes ?? '—'}</p>
+			<>
+				<header>
+					<H1>{recipe.name}</H1>
+					{recipe.description ? (
+						<p style={{ marginTop: 6 }}>{recipe.description}</p>
+					) : null}
+					<p style={{ color: '#6b7280', marginTop: 8 }}>
+						{recipe.category && <span>{recipe.category} · </span>}
+						<span>Servings: {recipe.servings ?? '—'}</span>
+						<span> · Prep: {recipe.prepTime ?? '—'} min</span>
+					</p>
+					{recipe.tags?.length ? (
+						<p style={{ marginTop: 8 }}>
+							Tags:{' '}
+							{(recipe.tags as { name: string }[])
+								.map((t) => t.name)
+								.join(', ')}
+						</p>
+					) : null}
+				</header>
 
-			<h2>Ingredients</h2>
-			{recipe.ingredients && recipe.ingredients.length > 0 ? (
-				<ul>
-					{recipe.ingredients.map((ing: Ingredient) => (
-						<li key={ing.id}>
-							{ing.amount ?? ''}
-							{ing.unit ? ` ${ing.unit}` : ''} — {ing.name}
-							{ing.section ? ` (${ing.section})` : ''}
-						</li>
-					))}
-				</ul>
-			) : (
-				<p>No ingredients</p>
-			)}
+				<section style={{ marginTop: 16 }}>
+					<H2>Ingredients</H2>
+					<ul>
+						{recipe.ingredients?.length ? (
+							recipe.ingredients.map((ing: Ingredient) => (
+								<li key={ing.id}>
+									{ing.amount} {ing.unit} {ing.product}
+								</li>
+							))
+						) : (
+							<li>No ingredients</li>
+						)}
+					</ul>
+				</section>
 
-			<h2>Steps</h2>
-			{recipe.steps && recipe.steps.length > 0 ? (
-				<ol>
-					{[...recipe.steps]
-						.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-						.map((step) => (
-							<li key={step.id}>{step.content}</li>
-						))}
-				</ol>
-			) : (
-				<p>No steps</p>
-			)}
+				<section style={{ marginTop: 16 }}>
+					<H2>Steps</H2>
+					<ol>
+						{(recipe.steps ?? [])
+							.slice()
+							.sort((a: Step, b: Step) => (a.order ?? 0) - (b.order ?? 0))
+							.map((s: Step) => (
+								<li
+									key={s.id}
+									style={{ whiteSpace: 'pre-wrap', marginBottom: 8 }}
+								>
+									{s.content}
+								</li>
+							))}
+					</ol>
+				</section>
 
+				{recipe.notes ? (
+					<section style={{ marginTop: 16 }}>
+						<h3>Notes</h3>
+						<p>{recipe.notes}</p>
+					</section>
+				) : null}
+			</>
 			{/* Raw JSON for debugging */}
 			<pre style={{ whiteSpace: 'pre-wrap', marginTop: 16 }}>
 				{JSON.stringify(recipe, null, 2)}
