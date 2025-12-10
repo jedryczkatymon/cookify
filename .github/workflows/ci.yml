@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
           
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --ignore-scripts --frozen-lockfile
         
       - name: Run Biome
         run: pnpm check --write .
