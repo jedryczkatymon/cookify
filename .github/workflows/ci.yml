@@ -21,9 +21,6 @@ jobs:
           
       - name: Install dependencies
         run: pnpm install --ignore-scripts --frozen-lockfile
-
-      - name: Generate Prisma client
-        run: pnpm exec prisma generate
         
       - name: Run Biome
         run: pnpm check --write .
