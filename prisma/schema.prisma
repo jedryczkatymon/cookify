@@ -64,7 +64,7 @@ model Upload {
   createdAt    DateTime @default(now())
   recipeId     Int?
   uploadedById String
-  recipe       Recipe?  @relation(fields: [recipeId], references: [id])
+  recipe       Recipe?  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   uploadedBy   User     @relation(fields: [uploadedById], references: [clerkId])
 }
 

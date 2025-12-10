@@ -27,8 +27,10 @@ import TagsInput from "@/components/ui/tags-input"
 import { Textarea } from "@/components/ui/textarea"
 import { H1, H2 } from "@/components/ui/typography"
 import { cn } from "@/lib/utils"
+import { useUploadThing } from "@/utils/uploadthing"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Check, ChevronsUpDown, Minus, Plus } from "lucide-react"
+import { useState } from "react"
 import { type Resolver, useFieldArray, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { Recipe, Tag } from "types/types"
@@ -61,6 +63,7 @@ const formSchema = z.object({
 		)
 		.min(1),
 	steps: z.string().min(1),
+	imageUrl: z.string().optional(),
 })
 
 export default function RecipeForm({
@@ -72,6 +75,9 @@ export default function RecipeForm({
 	onSubmit?: (values: z.infer<typeof formSchema>) => Promise<void>
 	submitLabel?: string
 }) {
+	const [files, setFiles] = useState<File[]>([])
+	const { startUpload, isUploading } = useUploadThing("imageUploader")
+
 	const meals = [
 		"Breakfast",
 		"Second Breakfast",
@@ -112,6 +118,7 @@ export default function RecipeForm({
 			notes: recipe?.notes ?? "",
 			ingredients: initialIngredients,
 			steps: initialSteps,
+			imageUrl: "",
 		},
 	})
 
@@ -121,14 +128,35 @@ export default function RecipeForm({
 	})
 
 	const internalSubmit = async (values: z.infer<typeof formSchema>) => {
-		if (onSubmit) {
-			await onSubmit(values)
-			return
-		}
-
 		try {
+			let uploadedImageUrl = values.imageUrl
+
+			if (files.length > 0) {
+				// 3. Upload logic: Only runs if a user selected a file
+				const uploadRes = await startUpload(files)
+
+				if (!uploadRes || uploadRes.length === 0) {
+					toast.error("Image upload failed")
+					return
+				}
+
+				// Get the URL from Uploadthing response
+				uploadedImageUrl = uploadRes[0]?.ufsUrl
+			}
+
+			// 4. Attach the new URL to the values sent to API
+			const submissionData = {
+				...values,
+				imageUrl: uploadedImageUrl,
+			}
+
+			if (onSubmit) {
+				await onSubmit(submissionData)
+				return
+			}
+
 			const formData = new FormData()
-			formData.append("data", JSON.stringify(values))
+			formData.append("data", JSON.stringify(submissionData))
 
 			const url = recipe ? `/api/recipes/${recipe.slug}` : "/api/recipes"
 			const method = recipe ? "PUT" : "POST"
@@ -137,7 +165,7 @@ export default function RecipeForm({
 				method,
 				body: formData,
 			})
-			// if (!res.ok) throw new Error('Failed to submit')
+			if (!res.ok) throw new Error("Failed to submit")
 
 			toast.success(recipe ? "Recipe updated!" : "Recipe created!")
 		} catch (err) {
@@ -153,6 +181,26 @@ export default function RecipeForm({
 				className="mx-auto max-w-3xl space-y-8 py-10"
 			>
 				<H1>{recipe ? "Edit recipe" : "Create a recipe"}</H1>
+				<div className="space-y-2">
+					<H2>Recipe Photo</H2>
+					<FormItem>
+						<FormLabel>Cover Image</FormLabel>
+						<FormControl>
+							<Input
+								type="file"
+								accept="image/*"
+								onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+							/>
+						</FormControl>
+						{/* Preview (Optional) */}
+						{files.length > 0 && (
+							<p className="text-muted-foreground text-sm">
+								Selected: {files[0]?.name}
+							</p>
+						)}
+					</FormItem>
+				</div>
+
 				<H2>Basic Information</H2>
 
 				<FormField

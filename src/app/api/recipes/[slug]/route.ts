@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import type { Ingredient, Tag } from "types/types"
+import { UTApi } from "uploadthing/server"
 
 export async function PUT(
 	req: Request,
@@ -33,6 +34,16 @@ export async function PUT(
 				notes: values.notes,
 			},
 		})
+
+		if (values.imageUrl) {
+			// Find the upload record by URL and connect it
+			// We use updateMany incase of weird edge cases, but findUnique on url is better if url is unique in schema
+			// Assuming `url` is unique or you can find by it:
+			await prisma.upload.updateMany({
+				where: { url: values.imageUrl },
+				data: { recipeId: existing.id },
+			})
+		}
 
 		// ----- STEPS (replace) -----
 		// Expecting steps separated by blank line (same format as form)
@@ -119,6 +130,7 @@ export async function PUT(
 	}
 }
 
+const utapi = new UTApi()
 export async function DELETE(
 	_req: Request,
 	{ params }: { params: Promise<{ slug: string }> },
@@ -128,10 +140,16 @@ export async function DELETE(
 
 		const recipe = await prisma.recipe.findUnique({
 			where: { slug },
+			include: { ingredients: true, tags: true, steps: true, uploads: true },
 		})
 
 		if (!recipe) {
 			return NextResponse.json({ error: "Recipe not found" }, { status: 404 })
+		}
+
+		if (recipe.uploads.length > 0) {
+			const fileKeys = recipe.uploads.map((u: { fileName: string }) => u.fileName)
+			await utapi.deleteFiles(fileKeys)
 		}
 
 		await prisma.step.deleteMany({ where: { recipeId: recipe.id } })

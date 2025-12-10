@@ -81,6 +81,6 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 	// Default: return full recipe including relations
 	return prisma.recipe.findFirst({
 		where: { slug, createdById: user.clerkId },
-		include: { ingredients: true, steps: true, tags: true },
+		include: { ingredients: true, steps: true, tags: true, uploads: true },
 	})
 }

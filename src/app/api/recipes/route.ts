@@ -24,6 +24,13 @@ export async function POST(req: Request) {
 			},
 		})
 
+		if (values.imageUrl) {
+			await prisma.upload.updateMany({
+				where: { url: values.imageUrl },
+				data: { recipeId: recipe.id }, // Connect the photo to the new recipe
+			})
+		}
+
 		// ----- STEP -----
 		await prisma.step.create({
 			data: {
