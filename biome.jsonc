@@ -6,7 +6,10 @@
 		"useIgnoreFile": true,
 		"defaultBranch": "main"
 	},
-	"files": { "ignoreUnknown": false, "ignore": ["src/components/ui/**", "prisma/generated/**"] },
+	"files": {
+		"ignoreUnknown": false,
+		"ignore": ["src/components/ui/**", "prisma/generated/**"]
+	},
 	"formatter": { "enabled": true },
 	"organizeImports": { "enabled": true },
 	"linter": {
@@ -25,6 +28,6 @@
 		}
 	},
 	"javascript": {
-		"formatter": { "semicolons": "asNeeded", "quoteStyle": "single" }
+		"formatter": { "semicolons": "asNeeded", "quoteStyle": "double" }
 	}
 }

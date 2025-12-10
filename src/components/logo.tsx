@@ -1,5 +1,5 @@
-import { CookingPot } from 'lucide-react'
-import Link from 'next/link'
+import { CookingPot } from "lucide-react"
+import Link from "next/link"
 
 export default function Logo() {
 	return (

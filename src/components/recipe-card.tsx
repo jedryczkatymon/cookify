@@ -1,7 +1,7 @@
-'use client'
-import DialogDelete from '@/components/dialog-delete'
-import Link from 'next/link'
-import type { Recipe } from 'types/types'
+"use client"
+import DialogDelete from "@/components/dialog-delete"
+import Link from "next/link"
+import type { Recipe } from "types/types"
 
 export default function RecipeCard({ recipe }: { recipe: Recipe }) {
 	return (

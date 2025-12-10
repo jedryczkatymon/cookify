@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma'
-import { currentUser } from '@clerk/nextjs/server'
+import { prisma } from "@/lib/prisma"
+import { currentUser } from "@clerk/nextjs/server"
 
 export async function getCurrentUser() {
 	const user = await currentUser()

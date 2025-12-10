@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import {
 	AlertDialog,
@@ -10,18 +10,18 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Trash2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+} from "@/components/ui/alert-dialog"
+import { Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function DialogDelete({ slug }: { slug: string }) {
 	const router = useRouter()
 	const handleDelete = async () => {
 		await fetch(`/api/recipes/${slug}`, {
-			method: 'DELETE',
+			method: "DELETE",
 		})
-		if (window.location.pathname.startsWith('/dashboard/recipe/')) {
-			router.push('/dashboard')
+		if (window.location.pathname.startsWith("/dashboard/recipe/")) {
+			router.push("/dashboard")
 		} else {
 			router.refresh()
 		}

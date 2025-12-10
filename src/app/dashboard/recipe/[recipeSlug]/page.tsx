@@ -1,8 +1,8 @@
-import DialogDelete from '@/components/dialog-delete'
-import { H1, H2 } from '@/components/ui/typography'
-import { getUserRecipeBySlug } from '@/lib/prisma/getUserRecipes'
-import { notFound } from 'next/navigation'
-import type { Ingredient, Step } from 'types/types'
+import DialogDelete from "@/components/dialog-delete"
+import { H1, H2 } from "@/components/ui/typography"
+import { getUserRecipeBySlug } from "@/lib/prisma/getUserRecipes"
+import { notFound } from "next/navigation"
+import type { Ingredient, Step } from "types/types"
 
 export default async function Recipe({
 	params,
@@ -11,7 +11,7 @@ export default async function Recipe({
 }) {
 	const { recipeSlug } = await params
 	const recipe = await getUserRecipeBySlug(recipeSlug)
-	console.log('recipe', recipe)
+	console.log("recipe", recipe)
 
 	if (!recipe) {
 		return notFound()
@@ -25,17 +25,17 @@ export default async function Recipe({
 					{recipe.description ? (
 						<p style={{ marginTop: 6 }}>{recipe.description}</p>
 					) : null}
-					<p style={{ color: '#6b7280', marginTop: 8 }}>
+					<p style={{ color: "#6b7280", marginTop: 8 }}>
 						{recipe.category && <span>{recipe.category} · </span>}
-						<span>Servings: {recipe.servings ?? '—'}</span>
-						<span> · Prep: {recipe.prepTime ?? '—'} min</span>
+						<span>Servings: {recipe.servings ?? "—"}</span>
+						<span> · Prep: {recipe.prepTime ?? "—"} min</span>
 					</p>
 					{recipe.tags?.length ? (
 						<p style={{ marginTop: 8 }}>
-							Tags:{' '}
+							Tags:{" "}
 							{(recipe.tags as { name: string }[])
 								.map((t) => t.name)
-								.join(', ')}
+								.join(", ")}
 						</p>
 					) : null}
 				</header>
@@ -64,7 +64,7 @@ export default async function Recipe({
 							.map((s: Step) => (
 								<li
 									key={s.id}
-									style={{ whiteSpace: 'pre-wrap', marginBottom: 8 }}
+									style={{ whiteSpace: "pre-wrap", marginBottom: 8 }}
 								>
 									{s.content}
 								</li>
@@ -82,7 +82,7 @@ export default async function Recipe({
 
 			<DialogDelete slug={recipeSlug} />
 			{/* Raw JSON for debugging */}
-			<pre style={{ whiteSpace: 'pre-wrap', marginTop: 16 }}>
+			<pre style={{ whiteSpace: "pre-wrap", marginTop: 16 }}>
 				{JSON.stringify(recipe, null, 2)}
 			</pre>
 		</div>

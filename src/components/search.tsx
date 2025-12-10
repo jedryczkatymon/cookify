@@ -1,13 +1,13 @@
-import { Search as SearchIcon, X } from 'lucide-react'
+import { Search as SearchIcon, X } from "lucide-react"
 
-import { SearchBar } from '@/components/searchbar'
+import { SearchBar } from "@/components/searchbar"
 import {
 	Drawer,
 	DrawerClose,
 	DrawerContent,
 	DrawerTitle,
 	DrawerTrigger,
-} from '@/components/ui/drawer'
+} from "@/components/ui/drawer"
 
 export function Search() {
 	return (

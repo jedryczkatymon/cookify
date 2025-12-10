@@ -1,5 +1,5 @@
 // lib/env.js or src/env.js
-import { z } from 'zod'
+import { z } from "zod"
 
 // Schema for validation
 const envSchema = z.object({
@@ -10,8 +10,8 @@ const envSchema = z.object({
 	UPLOADTHING_TOKEN: z.string().min(1),
 	NGROK_COMMAND: z.string().optional(),
 	NODE_ENV: z
-		.enum(['development', 'test', 'production'])
-		.default('development'),
+		.enum(["development", "test", "production"])
+		.default("development"),
 
 	// Client-side env vars
 	NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),

@@ -1,5 +1,5 @@
-'use client'
-import { useUser } from '@clerk/nextjs'
+"use client"
+import { useUser } from "@clerk/nextjs"
 
 export default function Welcome() {
 	const { user } = useUser()

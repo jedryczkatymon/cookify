@@ -3,14 +3,14 @@ import {
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from '@/components/ui/accordion'
+} from "@/components/ui/accordion"
 import {
 	Drawer,
 	DrawerClose,
 	DrawerContent,
 	DrawerTitle,
 	DrawerTrigger,
-} from '@/components/ui/drawer'
+} from "@/components/ui/drawer"
 import {
 	Film,
 	MenuIcon,
@@ -18,8 +18,8 @@ import {
 	TrendingUp,
 	UsersRound,
 	X,
-} from 'lucide-react'
-import Link from 'next/link'
+} from "lucide-react"
+import Link from "next/link"
 
 export function HamburgerMenu() {
 	return (

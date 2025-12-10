@@ -4,9 +4,9 @@ import {
 	SignedIn,
 	SignedOut,
 	UserButton,
-} from '@clerk/nextjs'
-import { CookingPot } from 'lucide-react'
-import Link from 'next/link'
+} from "@clerk/nextjs"
+import { CookingPot } from "lucide-react"
+import Link from "next/link"
 
 export function Navbar() {
 	return (
