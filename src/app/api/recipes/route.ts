@@ -58,22 +58,31 @@ export async function POST(req: Request) {
 
 		// ----- TAGS -----
 		if (values.tags && values.tags.length > 0) {
-			const tagPromises = (values.tags as Tag[]).map((tagName) =>
-				prisma.tag.upsert({
+			const tagPromises = (values.tags as Tag[]).map(async (tagName) => {
+				const existingTag = await prisma.tag.findFirst({
 					where: { name: tagName },
-					update: {
-						recipe: {
-							connect: { id: recipe.id },
+				})
+	
+				if (existingTag) {
+					await prisma.tag.update({
+						where: { id: existingTag.id },
+						data: {
+							recipe: {
+								connect: { id: recipe.id },
+							},
 						},
-					},
-					create: {
-						name: tagName,
-						recipe: {
-							connect: { id: recipe.id },
+					})
+				} else {
+					await prisma.tag.create({
+						data: {
+							name: tagName,
+							recipe: {
+								connect: { id: recipe.id },
+							},
 						},
-					},
-				}),
-			)
+					})
+				}
+			})
 			await Promise.all(tagPromises)
 		}
 

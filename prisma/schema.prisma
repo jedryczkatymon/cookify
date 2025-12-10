@@ -32,7 +32,7 @@ model Recipe {
 
 model Tag {
   id       Int     @id @default(autoincrement())
-  name     String  @unique
+  name     String
   recipeId Int
   recipe  Recipe  @relation(fields: [recipeId], references: [id])
 }
@@ -58,7 +58,7 @@ model Ingredient {
 model Upload {
   id           String   @id @default(cuid())
   url          String
-  fileName     String   @unique
+  fileName     String
   fileType     String
   fileSize     Int
   createdAt    DateTime @default(now())
