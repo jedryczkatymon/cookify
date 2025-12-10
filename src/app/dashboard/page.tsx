@@ -1,4 +1,5 @@
-import { Button } from '@/components/ui/button'
+import RecipeCard from "@/components/recipe-card"
+import { Button } from "@/components/ui/button"
 import {
 	Empty,
 	EmptyContent,
@@ -6,14 +7,14 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle,
-} from '@/components/ui/empty'
-import { getUserRecipes } from '@/lib/prisma/getUserRecipes'
-import { FileXCorner } from 'lucide-react'
-import Link from 'next/link'
-import type { Recipe } from 'types/types'
+} from "@/components/ui/empty"
+import { getUserRecipes } from "@/lib/prisma/getUserRecipes"
+import { FileXCorner } from "lucide-react"
+import Link from "next/link"
+import type { Recipe } from "types/types"
 
 export default async function DashboardPage() {
-	const recipes = await getUserRecipes(['id', 'slug', 'name', 'prepTime'])
+	const recipes = await getUserRecipes(["id", "slug", "name", "prepTime"])
 
 	return (
 		<>
@@ -44,14 +45,7 @@ export default async function DashboardPage() {
 				<>
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 						{recipes.map((recipe: Recipe) => (
-							<Link key={recipe.id} href={`/dashboard/recipe/${recipe.slug}`}>
-								<Button
-									variant="outline"
-									className="rounded-md border bg-white p-4 shadow-sm"
-								>
-									{recipe.name}
-								</Button>
-							</Link>
+							<RecipeCard key={recipe.id} recipe={recipe} />
 						))}
 					</div>
 				</>

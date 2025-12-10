@@ -1,17 +1,15 @@
-import { prisma } from '@/lib/prisma'
-import { auth } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
-import type { Ingredient, Tag } from 'types/types'
+import { prisma } from "@/lib/prisma"
+import { auth } from "@clerk/nextjs/server"
+import { NextResponse } from "next/server"
+import type { Ingredient, Tag } from "types/types"
 
 export async function POST(req: Request) {
 	try {
 		const { userId } = await auth()
-		if (!userId)
-			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
 		const form = await req.formData()
-		const json = form.get('data')?.toString()
-		const values = JSON.parse(json || '{}')
+		const json = form.get("data")?.toString()
+		const values = JSON.parse(json || "{}")
 
 		// ----- CREATE RECIPE -----
 		const recipe = await prisma.recipe.create({
@@ -39,7 +37,7 @@ export async function POST(req: Request) {
 		if (Array.isArray(values.ingredients) && values.ingredients.length > 0) {
 			const ingredientsData = (values.ingredients as Ingredient[]).map(
 				(ing) => ({
-					name: (ing.product) ?? '',
+					name: ing.name ?? "",
 					amount: ing.amount ?? null,
 					unit: ing.unit ?? null,
 					recipeId: recipe.id,
@@ -75,6 +73,6 @@ export async function POST(req: Request) {
 		return NextResponse.json({ recipe }, { status: 200 })
 	} catch (err) {
 		console.error(err)
-		return NextResponse.json({ error: 'Server error' }, { status: 500 })
+		return NextResponse.json({ error: "Server error" }, { status: 500 })
 	}
 }

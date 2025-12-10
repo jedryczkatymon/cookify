@@ -1,7 +1,8 @@
+import DialogDelete from '@/components/dialog-delete'
+import { H1, H2 } from '@/components/ui/typography'
 import { getUserRecipeBySlug } from '@/lib/prisma/getUserRecipes'
 import { notFound } from 'next/navigation'
 import type { Ingredient, Step } from 'types/types'
-import { H1, H2 } from '@/components/ui/typography'
 
 export default async function Recipe({
 	params,
@@ -45,7 +46,7 @@ export default async function Recipe({
 						{recipe.ingredients?.length ? (
 							recipe.ingredients.map((ing: Ingredient) => (
 								<li key={ing.id}>
-									{ing.amount} {ing.unit} {ing.product}
+									{ing.amount} {ing.unit} {ing.name}
 								</li>
 							))
 						) : (
@@ -78,6 +79,8 @@ export default async function Recipe({
 					</section>
 				) : null}
 			</>
+
+			<DialogDelete slug={recipeSlug} />
 			{/* Raw JSON for debugging */}
 			<pre style={{ whiteSpace: 'pre-wrap', marginTop: 16 }}>
 				{JSON.stringify(recipe, null, 2)}
