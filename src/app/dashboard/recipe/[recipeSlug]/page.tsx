@@ -1,9 +1,9 @@
 import DialogDelete from "@/components/dialog-delete"
 import { H1, H2 } from "@/components/ui/typography"
 import { getUserRecipeBySlug } from "@/lib/prisma/getUserRecipes"
-import Image from "next/image" // 1. Import Image component
+import type { Ingredient, Step } from "@/prisma"
+import Image from "next/image"
 import { notFound } from "next/navigation"
-import type { Ingredient, Step } from "types/types"
 
 export default async function Recipe({
 	params,
@@ -17,19 +17,15 @@ export default async function Recipe({
 		return notFound()
 	}
 
-	// 2. Safely grab the first image URL
-	// We assume recipe includes 'uploads' (see "Crucial Step" below)
-	const heroImage = recipe.uploads?.[0]?.url
+	const heroImage = recipe.uploads?.url
 
 	return (
 		<div className="mx-auto max-w-3xl py-10">
 			{" "}
-			{/* Added container constraint for better look */}
 			<>
 				<header>
 					<H1>{recipe.name}</H1>
 
-					{/* 3. Display the Image */}
 					{heroImage && (
 						<div className="relative mt-6 aspect-video w-full overflow-hidden rounded-lg bg-gray-100">
 							<Image
@@ -38,7 +34,7 @@ export default async function Recipe({
 								fill
 								className="object-cover"
 								sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-								priority // loads this image immediately as it's above the fold
+								priority
 							/>
 						</div>
 					)}
@@ -66,11 +62,10 @@ export default async function Recipe({
 					<H2>Ingredients</H2>
 					<ul className="mt-4 list-inside list-disc">
 						{" "}
-						{/* Added some basic list styling */}
 						{recipe.ingredients?.length ? (
 							recipe.ingredients.map((ing: Ingredient) => (
 								<li key={ing.id} className="mb-2">
-									{ing.amount} {ing.unit} {ing.name}
+									{ing.amount} {ing.unit} {ing.product}
 								</li>
 							))
 						) : (
@@ -98,7 +93,7 @@ export default async function Recipe({
 
 				{recipe.notes ? (
 					<section style={{ marginTop: 24 }}>
-						<H2>Notes</H2> {/* Changed h3 to H2 for consistency */}
+						<H2>Notes</H2>
 						<p className="mt-2">{recipe.notes}</p>
 					</section>
 				) : null}

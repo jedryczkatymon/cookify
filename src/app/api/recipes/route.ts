@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
+import type { Ingredient } from "@/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
-import type { Ingredient, Tag } from "types/types"
 
 export async function POST(req: Request) {
 	try {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 		if (values.imageUrl) {
 			await prisma.upload.updateMany({
 				where: { url: values.imageUrl },
-				data: { recipeId: recipe.id }, // Connect the photo to the new recipe
+				data: { recipeId: recipe.id },
 			})
 		}
 
@@ -44,9 +44,9 @@ export async function POST(req: Request) {
 		if (Array.isArray(values.ingredients) && values.ingredients.length > 0) {
 			const ingredientsData = (values.ingredients as Ingredient[]).map(
 				(ing) => ({
-					name: ing.name ?? "",
-					amount: ing.amount ?? null,
-					unit: ing.unit ?? null,
+					product: ing.product,
+					amount: ing.amount,
+					unit: ing.unit,
 					recipeId: recipe.id,
 				}),
 			)
@@ -58,32 +58,14 @@ export async function POST(req: Request) {
 
 		// ----- TAGS -----
 		if (values.tags && values.tags.length > 0) {
-			const tagPromises = (values.tags as Tag[]).map(async (tagName) => {
-				const existingTag = await prisma.tag.findFirst({
-					where: { name: tagName },
-				})
-	
-				if (existingTag) {
-					await prisma.tag.update({
-						where: { id: existingTag.id },
-						data: {
-							recipe: {
-								connect: { id: recipe.id },
-							},
-						},
-					})
-				} else {
-					await prisma.tag.create({
-						data: {
-							name: tagName,
-							recipe: {
-								connect: { id: recipe.id },
-							},
-						},
-					})
-				}
+			const tagsData = values.tags.map((tag: string | { name: string }) => ({
+				name: typeof tag === "string" ? tag : tag.name,
+				recipeId: recipe.id,
+			}))
+
+			await prisma.tag.createMany({
+				data: tagsData,
 			})
-			await Promise.all(tagPromises)
 		}
 
 		return NextResponse.json({ recipe }, { status: 200 })

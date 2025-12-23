@@ -27,14 +27,23 @@ import TagsInput from "@/components/ui/tags-input"
 import { Textarea } from "@/components/ui/textarea"
 import { H1, H2 } from "@/components/ui/typography"
 import { cn } from "@/lib/utils"
+import type { Ingredient, Recipe, Step, Tag, Upload } from "@/prisma"
 import { useUploadThing } from "@/utils/uploadthing"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Check, ChevronsUpDown, Minus, Plus } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { type Resolver, useFieldArray, useForm } from "react-hook-form"
 import { toast } from "sonner"
-import type { Recipe, Tag } from "types/types"
 import { z } from "zod"
+
+type RecipeWithRelations = Recipe & {
+	tags: Tag[]
+	ingredients: Ingredient[]
+	steps: Step[]
+	uploads: Upload | null
+}
 
 const formSchema = z.object({
 	name: z.string().min(1).max(50),
@@ -71,12 +80,13 @@ export default function RecipeForm({
 	onSubmit,
 	submitLabel = recipe ? "Update" : "Submit",
 }: {
-	recipe?: Recipe | null
+	recipe?: RecipeWithRelations | null
 	onSubmit?: (values: z.infer<typeof formSchema>) => Promise<void>
 	submitLabel?: string
 }) {
+	const router = useRouter()
 	const [files, setFiles] = useState<File[]>([])
-	const { startUpload, isUploading } = useUploadThing("imageUploader")
+	const { startUpload } = useUploadThing("imageUploader")
 
 	const meals = [
 		"Breakfast",
@@ -95,7 +105,7 @@ export default function RecipeForm({
 	const initialIngredients = recipe?.ingredients?.map((ing) => ({
 		amount: ing.amount ?? undefined,
 		unit: ing.unit ?? "",
-		product: ing.name ?? "",
+		product: ing.product ?? "",
 	})) ?? [{ amount: undefined, unit: "", product: "" }]
 
 	const initialSteps = (recipe?.steps ?? [])
@@ -111,7 +121,7 @@ export default function RecipeForm({
 		defaultValues: {
 			name: recipe?.name ?? "",
 			description: recipe?.description ?? "",
-			tags: recipe?.tags?.map((t: Tag) => t.name) ?? [],
+			tags: recipe?.tags?.map((t) => t.name) ?? [],
 			category: recipe?.category ?? "",
 			servings: recipe?.servings ?? undefined,
 			prepTime: recipe?.prepTime ?? undefined,
@@ -132,19 +142,22 @@ export default function RecipeForm({
 			let uploadedImageUrl = values.imageUrl
 
 			if (files.length > 0) {
-				// 3. Upload logic: Only runs if a user selected a file
-				const uploadRes = await startUpload(files)
+				try {
+					const uploadRes = await startUpload(files)
 
-				if (!uploadRes || uploadRes.length === 0) {
-					toast.error("Image upload failed")
+					if (!uploadRes || uploadRes.length === 0) {
+						toast.error("Image upload failed")
+						return
+					}
+
+					uploadedImageUrl = uploadRes[0]?.ufsUrl
+				} catch (uploadError) {
+					console.error("Upload error:", uploadError)
+					toast.error("Failed to upload image. Please try again.")
 					return
 				}
-
-				// Get the URL from Uploadthing response
-				uploadedImageUrl = uploadRes[0]?.ufsUrl
 			}
 
-			// 4. Attach the new URL to the values sent to API
 			const submissionData = {
 				...values,
 				imageUrl: uploadedImageUrl,
@@ -184,25 +197,68 @@ export default function RecipeForm({
 				<div className="space-y-2">
 					<H2>Recipe Photo</H2>
 					<FormItem>
-						<FormLabel>Cover Image</FormLabel>
 						<FormControl>
-							<Input
-								type="file"
-								accept="image/*"
-								onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-							/>
+							<div className="space-y-4">
+								{recipe?.uploads?.url ? (
+									<div className="relative">
+										<Image
+											src={recipe.uploads.url}
+											alt={recipe.name}
+											width={640}
+											height={600}
+											className="size-full rounded-lg object-cover"
+										/>
+										<Button
+											variant="destructive"
+											className="absolute top-2 right-2"
+											onClick={() => {
+												const handleRemoveImage = async () => {
+													try {
+														if (!recipe?.uploads) return
+
+														// Delete from database and UploadThing
+														const res = await fetch(
+															`/api/recipes/${recipe.slug}/image`,
+															{
+																method: "DELETE",
+															},
+														)
+
+														if (!res.ok)
+															throw new Error("Failed to delete image")
+
+														toast.success("Image removed successfully")
+														router.refresh()
+													} catch (error) {
+														console.error("Error removing image:", error)
+														toast.error("Failed to remove image")
+													}
+												}
+
+												handleRemoveImage()
+											}}
+										>
+											Remove
+										</Button>
+									</div>
+								) : (
+									<>
+										<FormLabel>Cover Image</FormLabel>
+										<Input
+											type="file"
+											accept="image/*"
+											onChange={(e) =>
+												setFiles(Array.from(e.target.files ?? []))
+											}
+										/>
+									</>
+								)}
+							</div>
 						</FormControl>
-						{/* Preview (Optional) */}
-						{files.length > 0 && (
-							<p className="text-muted-foreground text-sm">
-								Selected: {files[0]?.name}
-							</p>
-						)}
 					</FormItem>
 				</div>
 
 				<H2>Basic Information</H2>
-
 				<FormField
 					control={form.control}
 					name="name"
