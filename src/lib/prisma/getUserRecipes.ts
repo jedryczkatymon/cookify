@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/prisma/getCurrentUser"
-import type { Prisma } from "prisma/generated/browser"
+import type { Prisma } from "@/prisma"
 
 /**
  * Fetch recipes for the current user, with optional field selection.
@@ -81,6 +81,6 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 	// Default: return full recipe including relations
 	return prisma.recipe.findFirst({
 		where: { slug, createdById: user.clerkId },
-		include: { ingredients: true, steps: true, tags: true },
+		include: { ingredients: true, steps: true, tags: true, uploads: true },
 	})
 }

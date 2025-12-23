@@ -1,7 +1,8 @@
 "use client"
 import DialogDelete from "@/components/dialog-delete"
+import EditButton from "@/components/edit-button"
+import type { Recipe } from "@/prisma"
 import Link from "next/link"
-import type { Recipe } from "types/types"
 
 export default function RecipeCard({ recipe }: { recipe: Recipe }) {
 	return (
@@ -12,6 +13,7 @@ export default function RecipeCard({ recipe }: { recipe: Recipe }) {
 				</div>
 			</Link>
 			<DialogDelete slug={recipe.slug} />
+			<EditButton slug={recipe.slug} />
 		</div>
 	)
 }

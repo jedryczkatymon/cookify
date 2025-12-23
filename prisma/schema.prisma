@@ -21,20 +21,20 @@ model Recipe {
   updatedAt   DateTime     @updatedAt
   notes       String?
   createdById String
-  createdBy   User         @relation(fields: [createdById], references: [clerkId])
+  createdBy   User         @relation(fields: [createdById], references: [clerkId], onDelete: Cascade)
   steps       Step[]
   ingredients Ingredient[]
   tags        Tag[]
-  uploads     Upload[]
+  uploads     Upload?
 
   @@index([name])
 }
 
 model Tag {
   id       Int     @id @default(autoincrement())
-  name     String  @unique
+  name     String
   recipeId Int
-  recipe  Recipe  @relation(fields: [recipeId], references: [id])
+  recipe  Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Step {
@@ -42,27 +42,28 @@ model Step {
   order    Int
   content  String
   recipeId Int
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Ingredient {
   id       Int     @id @default(autoincrement())
-  name     String
+  product  String
   amount   Float?
   unit     String?
   section  String?
   recipeId Int
-  recipe   Recipe  @relation(fields: [recipeId], references: [id])
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Upload {
   id           String   @id @default(cuid())
+  key          String
   url          String
-  fileName     String   @unique
+  fileName     String
   fileType     String
   fileSize     Int
   createdAt    DateTime @default(now())
-  recipeId     Int?
+  recipeId     Int?     @unique
   uploadedById String
   recipe       Recipe?  @relation(fields: [recipeId], references: [id])
   uploadedBy   User     @relation(fields: [uploadedById], references: [clerkId])

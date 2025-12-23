@@ -19,6 +19,7 @@ export const ourFileRouter = {
 		.onUploadComplete(async ({ metadata, file }) => {
 			await prisma.upload.create({
 				data: {
+					key: file.key,
 					url: file.ufsUrl,
 					fileName: file.name,
 					fileType: file.type,

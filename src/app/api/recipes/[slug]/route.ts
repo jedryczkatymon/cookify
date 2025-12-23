@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma"
+import type { Ingredient, Tag } from "@/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
-import type { Ingredient, Tag } from "types/types"
+import { UTApi } from "uploadthing/server"
 
 export async function PUT(
 	req: Request,
@@ -9,13 +10,16 @@ export async function PUT(
 ) {
 	try {
 		const { userId } = await auth()
-
 		const { slug } = await params
 
 		const existing = await prisma.recipe.findUnique({
-			where: { slug },
+			where: { slug, createdById: userId },
 			include: { ingredients: true, tags: true, steps: true },
 		})
+
+		if (!existing) {
+			return NextResponse.json({ error: "Recipe not found" }, { status: 404 })
+		}
 
 		const form = await req.formData()
 		const json = form.get("data")?.toString()
@@ -34,15 +38,42 @@ export async function PUT(
 			},
 		})
 
+		// ----- FIX: HANDLE IMAGE UPLOAD CONSTRAINT -----
+		if (values.imageUrl) {
+			const newUpload = await prisma.upload.findFirst({
+				where: { url: values.imageUrl },
+			})
+
+			if (newUpload) {
+				const currentUpload = await prisma.upload.findUnique({
+					where: { recipeId: existing.id },
+				})
+
+				if (currentUpload && currentUpload.id !== newUpload.id) {
+					await prisma.upload.update({
+						where: { id: currentUpload.id },
+						data: { recipeId: null },
+					})
+
+					try {
+						await utapi.deleteFiles(currentUpload.key)
+					} catch (e) {}
+				}
+
+				await prisma.upload.update({
+					where: { id: newUpload.id },
+					data: { recipeId: existing.id },
+				})
+			}
+		}
+
 		// ----- STEPS (replace) -----
-		// Expecting steps separated by blank line (same format as form)
 		const stepsArr: string[] = (values.steps ?? "")
 			.toString()
 			.split(/\n\s*\n/)
 			.map((s: string) => s.trim())
 			.filter(Boolean)
 
-		// remove existing steps then create new ones with order
 		await prisma.step.deleteMany({ where: { recipeId: existing.id } })
 		if (stepsArr.length > 0) {
 			const stepsData = stepsArr.map((content, idx) => ({
@@ -58,7 +89,7 @@ export async function PUT(
 		if (Array.isArray(values.ingredients) && values.ingredients.length > 0) {
 			const ingredientsData = (values.ingredients as Ingredient[]).map(
 				(ing) => ({
-					name: ing.name ?? "",
+					product: ing.product ?? "",
 					amount: ing.amount ?? null,
 					unit: ing.unit ?? null,
 					recipeId: existing.id,
@@ -76,7 +107,6 @@ export async function PUT(
 		const toAdd = newTags.filter((t) => !currentTagNames.includes(t))
 		const toRemove = currentTagNames.filter((t) => !newTags.includes(t))
 
-		// add/connect new tags
 		const addPromises = toAdd.map((tagName) =>
 			prisma.tag.upsert({
 				where: { name: tagName },
@@ -93,7 +123,7 @@ export async function PUT(
 				},
 			}),
 		)
-		// disconnect removed tags
+
 		const removePromises = toRemove.map((tagName) =>
 			prisma.tag.update({
 				where: { name: tagName },
@@ -119,33 +149,44 @@ export async function PUT(
 	}
 }
 
+const utapi = new UTApi()
+
 export async function DELETE(
 	_req: Request,
 	{ params }: { params: Promise<{ slug: string }> },
 ) {
 	try {
+		const { userId } = await auth()
 		const { slug } = await params
 
 		const recipe = await prisma.recipe.findUnique({
-			where: { slug },
+			where: { slug, createdById: userId },
+			include: { uploads: true },
 		})
 
 		if (!recipe) {
 			return NextResponse.json({ error: "Recipe not found" }, { status: 404 })
 		}
 
-		await prisma.step.deleteMany({ where: { recipeId: recipe.id } })
-		await prisma.ingredient.deleteMany({ where: { recipeId: recipe.id } })
+		if (recipe.uploads) {
+			try {
+				await utapi.deleteFiles(recipe.uploads.key)
+			} catch (uploadError) {
+				console.error("UploadThing deletion error:", uploadError)
+			}
 
-		await prisma.tag.deleteMany({ where: { recipeId: recipe.id } })
+			await prisma.upload.delete({
+				where: { id: recipe.uploads.id },
+			})
+		}
 
 		await prisma.recipe.delete({
-			where: { slug: slug },
+			where: { id: recipe.id },
 		})
 
 		return NextResponse.json({ message: "Deleted" }, { status: 200 })
 	} catch (err) {
-		console.error(err)
+		console.error("Delete error:", err)
 		return NextResponse.json({ error: "Server error" }, { status: 500 })
 	}
 }

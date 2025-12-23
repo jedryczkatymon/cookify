@@ -9,12 +9,19 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty"
 import { getUserRecipes } from "@/lib/prisma/getUserRecipes"
+import type { Recipe } from "@/prisma"
 import { FileXCorner } from "lucide-react"
 import Link from "next/link"
-import type { Recipe } from "types/types"
 
 export default async function DashboardPage() {
-	const recipes = await getUserRecipes(["id", "slug", "name", "prepTime"])
+	const recipes = await getUserRecipes([
+		"id",
+		"slug",
+		"name",
+		"prepTime",
+		"tags",
+		"createdBy",
+	])
 
 	return (
 		<>
