@@ -1,6 +1,6 @@
 "use client"
+import EditButton from "@/components/button-edit"
 import DialogDelete from "@/components/dialog-delete"
-import EditButton from "@/components/edit-button"
 import type { Recipe } from "@/prisma"
 import Link from "next/link"
 
