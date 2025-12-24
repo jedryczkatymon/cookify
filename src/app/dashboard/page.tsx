@@ -1,3 +1,4 @@
+import ButtonCreateRound from "@/components/button-create-round"
 import RecipeCard from "@/components/recipe-card"
 import { Button } from "@/components/ui/button"
 import {
@@ -57,6 +58,7 @@ export default async function DashboardPage() {
 					</div>
 				</>
 			)}
+			<ButtonCreateRound />
 		</>
 	)
 }

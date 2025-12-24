@@ -1,3 +1,4 @@
+import EditButton from "@/components/button-edit"
 import DialogDelete from "@/components/dialog-delete"
 import { H1, H2 } from "@/components/ui/typography"
 import { getUserRecipeBySlug } from "@/lib/prisma/getUserRecipes"
@@ -100,6 +101,7 @@ export default async function Recipe({
 			</>
 			<div className="mt-10">
 				<DialogDelete slug={recipeSlug} />
+				<EditButton slug={recipeSlug} />
 			</div>
 			{/* Debugging: Remove this in production */}
 			{/* <pre style={{ whiteSpace: "pre-wrap", marginTop: 16 }}>

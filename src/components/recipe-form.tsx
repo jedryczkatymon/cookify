@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils"
 import type { Ingredient, Recipe, Step, Tag, Upload } from "@/prisma"
 import { useUploadThing } from "@/utils/uploadthing"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Dialog } from "@radix-ui/react-dialog"
 import { Check, ChevronsUpDown, Minus, Plus } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -37,6 +38,7 @@ import { useState } from "react"
 import { type Resolver, useFieldArray, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
+import DialogDelete from "./dialog-delete"
 
 type RecipeWithRelations = Recipe & {
 	tags: Tag[]
@@ -257,7 +259,6 @@ export default function RecipeForm({
 						</FormControl>
 					</FormItem>
 				</div>
-
 				<H2>Basic Information</H2>
 				<FormField
 					control={form.control}
@@ -272,7 +273,6 @@ export default function RecipeForm({
 						</FormItem>
 					)}
 				/>
-
 				<FormField
 					control={form.control}
 					name="description"
@@ -290,7 +290,6 @@ export default function RecipeForm({
 						</FormItem>
 					)}
 				/>
-
 				<FormField
 					control={form.control}
 					name="tags"
@@ -308,7 +307,6 @@ export default function RecipeForm({
 						</FormItem>
 					)}
 				/>
-
 				<FormField
 					control={form.control}
 					name="category"
@@ -365,7 +363,6 @@ export default function RecipeForm({
 						</FormItem>
 					)}
 				/>
-
 				<div className="grid grid-cols-12 gap-4">
 					<div className="col-span-6">
 						<FormField
@@ -409,7 +406,6 @@ export default function RecipeForm({
 						/>
 					</div>
 				</div>
-
 				<H2>Ingredients</H2>
 				<div className="space-y-4">
 					{fields.map((fieldItem, index) => (
@@ -505,7 +501,6 @@ export default function RecipeForm({
 						</Button>
 					</div>
 				</div>
-
 				<H2>Directions</H2>
 				<FormField
 					control={form.control}
@@ -524,8 +519,8 @@ export default function RecipeForm({
 						</FormItem>
 					)}
 				/>
-
 				<Button type="submit">{submitLabel}</Button>
+				{recipe ? <DialogDelete slug={recipe?.slug ?? ""} /> : null}
 			</form>
 		</Form>
 	)
