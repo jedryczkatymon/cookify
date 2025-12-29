@@ -10,6 +10,7 @@ interface GetUserRecipesOptions {
 	prepTimeMax?: number | null
 	tags?: string[]
 	ingredients?: string[]
+	sort?: string
 }
 
 export async function getCurrentUser() {
@@ -39,7 +40,32 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 		prepTimeMax,
 		tags,
 		ingredients,
+		sort = "createdAt.desc",
 	} = options
+
+	const [field, direction] = sort.split(".")
+	const dir = direction === "asc" ? "asc" : "desc"
+
+	let orderBy:
+		| Prisma.RecipeOrderByWithRelationInput
+		| Prisma.RecipeOrderByWithRelationInput[] = { createdAt: "desc" }
+
+	switch (field) {
+		case "name":
+			orderBy = [{ name: dir }, { id: "desc" }]
+			break
+		case "prepTime":
+			orderBy = [{ prepTime: dir }, { id: "desc" }]
+			break
+		case "createdAt":
+			orderBy = [{ createdAt: dir }, { id: "desc" }]
+			break
+		case "ingredientCount":
+			orderBy = [{ ingredients: { _count: dir } }, { id: "desc" }]
+			break
+		default:
+			orderBy = [{ createdAt: "desc" }, { id: "desc" }]
+	}
 
 	const validPage = Math.max(1, page)
 	const validLimit = Math.max(1, limit)
@@ -83,7 +109,7 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 			select: select as Prisma.RecipeSelect,
 			skip,
 			take: limit,
-			orderBy: { updatedAt: "desc" },
+			orderBy: orderBy,
 		}),
 		prisma.recipe.count({ where }),
 	])

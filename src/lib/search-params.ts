@@ -13,4 +13,5 @@ export const searchParamsCache = createSearchParamsCache({
 	prepTime: parseAsInteger,
 	tags: parseAsArrayOf(parseAsString).withDefault([]),
 	ingredients: parseAsArrayOf(parseAsString).withDefault([]),
+	sort: parseAsString.withDefault("createdAt.desc"),
 })

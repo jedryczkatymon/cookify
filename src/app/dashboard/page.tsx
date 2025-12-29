@@ -2,6 +2,7 @@ import ButtonCreateRound from "@/components/button-create-round"
 import { PerPageDropdown } from "@/components/per-page-dropdown"
 import RecipeCard from "@/components/recipe-card"
 import { RecipeFilters } from "@/components/recipe-filters"
+import { RecipeSort } from "@/components/recipe-sort"
 import { SearchInput } from "@/components/search-input"
 import { Button } from "@/components/ui/button"
 import {
@@ -36,7 +37,7 @@ type PageProps = {
 }
 
 export default async function DashboardPage({ searchParams }: PageProps) {
-	const { q, page, perPage, category, prepTime, tags, ingredients } =
+	const { q, page, perPage, category, prepTime, tags, ingredients, sort } =
 		await searchParamsCache.parse(searchParams)
 
 	const { recipes, total } = await getUserRecipes(
@@ -49,6 +50,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 			prepTimeMax: prepTime,
 			tags,
 			ingredients,
+			sort,
 		},
 	)
 
@@ -71,6 +73,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 		params.set("perPage", perPage.toString())
 		if (category) params.set("category", category)
 		if (prepTime) params.set("prepTime", prepTime.toString())
+		if (sort) params.set("sort", sort)
 
 		if (tags.length > 0) {
 			for (const tag of tags) {
@@ -101,6 +104,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 							availableTags={availableTags}
 							availableIngredients={availableIngredients}
 						/>
+						<RecipeSort />
 						<PerPageDropdown />
 					</div>
 				)}
