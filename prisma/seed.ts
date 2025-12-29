@@ -5,6 +5,13 @@ import "dotenv/config"
 async function main() {
 	const CLERK_ID = process.env.CLERK_ID
 
+	if (!CLERK_ID) {
+		console.error(
+			"Environment variable CLERK_ID is not set. Aborting seed operation.",
+		)
+		process.exit(1)
+	}
+	
 	console.log("Clearing existing recipe data...")
 	// Optional: Clear existing data to avoid unique constraint errors on tags/slugs
 	// await prisma.tag.deleteMany({})

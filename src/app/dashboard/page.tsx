@@ -1,5 +1,5 @@
 import ButtonCreateRound from "@/components/button-create-round"
-import { PerPageSelector } from "@/components/per-page-dropdown"
+import { PerPageDropdown } from "@/components/per-page-dropdown"
 import RecipeCard from "@/components/recipe-card"
 import { SearchInput } from "@/components/search-input"
 import { Button } from "@/components/ui/button"
@@ -53,7 +53,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 				{(total > 0 || hasActiveFilters) && (
 					<div className="flex items-center gap-2">
 						<SearchInput />
-						<PerPageSelector />
+						<PerPageDropdown />
 					</div>
 				)}
 			</div>
@@ -102,13 +102,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 						<Pagination className="mt-4">
 							<PaginationContent>
 								<PaginationItem>
-									<PaginationPrevious
-										href={page > 1 ? buildLink(page - 1) : "#"}
-										aria-disabled={page <= 1}
-										className={
-											page <= 1 ? "pointer-events-none opacity-50" : ""
-										}
-									/>
+									{page <= 1 ? (
+										<span className="pointer-events-none opacity-50">
+											<PaginationPrevious href="#" />
+										</span>
+									) : (
+										<PaginationPrevious href={buildLink(page - 1)} />
+									)}
 								</PaginationItem>
 
 								{allPages.map((p, index) => (
@@ -127,13 +127,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 								))}
 
 								<PaginationItem>
-									<PaginationNext
-										href={page < totalPages ? buildLink(page + 1) : "#"}
-										aria-disabled={page >= totalPages}
-										className={
-											page >= totalPages ? "pointer-events-none opacity-50" : ""
-										}
-									/>
+									{page >= totalPages ? (
+										<span className="pointer-events-none opacity-50">
+											<PaginationNext href="#" />
+										</span>
+									) : (
+										<PaginationNext href={buildLink(page + 1)} />
+									)}
 								</PaginationItem>
 							</PaginationContent>
 						</Pagination>
@@ -145,7 +145,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 	)
 }
 
-function getPageNumbers(currentPage: number, totalPages: number) {
+function getPageNumbers(
+	currentPage: number,
+	totalPages: number,
+): (number | string)[] {
+	if (totalPages <= 0) return []
+
 	const pages = new Set([
 		1,
 		totalPages,

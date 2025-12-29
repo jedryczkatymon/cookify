@@ -23,7 +23,7 @@ export function SearchInput() {
 				value={search}
 				onChange={(e) => {
 					setSearch(e.target.value)
-					setPage(null)
+					setPage("1")
 				}}
 			/>
 		</div>

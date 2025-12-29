@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select"
 import { parseAsInteger, useQueryState } from "nuqs"
 
-export function PerPageSelector() {
+export function PerPageDropdown() {
 	const [perPage, setPerPage] = useQueryState(
 		"perPage",
 		parseAsInteger.withDefault(10).withOptions({
@@ -18,12 +18,22 @@ export function PerPageSelector() {
 		}),
 	)
 
+	const [, setPage] = useQueryState(
+		"page",
+		parseAsInteger.withDefault(1).withOptions({
+			shallow: false,
+			history: "push",
+		}),
+	)
 	return (
 		<Select
 			value={perPage.toString()}
-			onValueChange={(value) => setPerPage(Number(value))}
+			onValueChange={(value) => {
+				setPerPage(Number(value))
+				setPage(1)
+			}}
 		>
-			<SelectTrigger className="w-18">
+			<SelectTrigger className="w-20">
 				<SelectValue placeholder="Limit" />
 			</SelectTrigger>
 			<SelectContent>

@@ -6,7 +6,7 @@ const envSchema = z.object({
 	// Server-side env vars
 	CLERK_SECRET_KEY: z.string().min(1),
 	CLERK_WEBHOOK_SIGNING_SECRET: z.string().min(1),
-	CLERK_ID: z.string().min(1),
+	CLERK_ID: z.string().optional(),
 	DATABASE_URL: z.string().url(),
 	UPLOADTHING_TOKEN: z.string().min(1),
 	NGROK_COMMAND: z.string().optional(),
