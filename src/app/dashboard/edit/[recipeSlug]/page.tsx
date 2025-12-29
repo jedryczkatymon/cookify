@@ -1,5 +1,5 @@
 import RecipeForm from "@/components/recipe-form"
-import { getUserRecipeBySlug } from "@/lib/prisma/getUserRecipes"
+import { getUserRecipeBySlug } from "@/lib/get-user-info"
 import { notFound } from "next/navigation"
 
 export default async function EditPage({

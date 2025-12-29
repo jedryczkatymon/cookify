@@ -25,6 +25,7 @@ export function PerPageDropdown() {
 			history: "push",
 		}),
 	)
+
 	return (
 		<Select
 			value={perPage.toString()}

@@ -26,6 +26,7 @@ import {
 import TagsInput from "@/components/ui/tags-input"
 import { Textarea } from "@/components/ui/textarea"
 import { H1, H2 } from "@/components/ui/typography"
+import { MEALS } from "@/lib/enums"
 import { cn } from "@/lib/utils"
 import type { Ingredient, Recipe, Step, Tag, Upload } from "@/prisma"
 import { useUploadThing } from "@/utils/uploadthing"
@@ -89,20 +90,6 @@ export default function RecipeForm({
 	const router = useRouter()
 	const [files, setFiles] = useState<File[]>([])
 	const { startUpload } = useUploadThing("imageUploader")
-
-	const meals = [
-		"Breakfast",
-		"Second Breakfast",
-		"Brunch",
-		"Lunch",
-		"Dinner",
-		"Dessert",
-		"Snack",
-		"Appetizer",
-		"Beverage",
-		"Preworkout",
-		"Postworkout",
-	] as const
 
 	const initialIngredients = recipe?.ingredients?.map((ing) => ({
 		amount: ing.amount ?? undefined,
@@ -218,7 +205,6 @@ export default function RecipeForm({
 													try {
 														if (!recipe?.uploads) return
 
-														// Delete from database and UploadThing
 														const res = await fetch(
 															`/api/recipes/${recipe.slug}/image`,
 															{
@@ -335,7 +321,7 @@ export default function RecipeForm({
 										<CommandList>
 											<CommandEmpty>No meal found.</CommandEmpty>
 											<CommandGroup>
-												{meals.map((meal) => (
+												{MEALS.map((meal) => (
 													<CommandItem
 														key={meal}
 														onSelect={() => {

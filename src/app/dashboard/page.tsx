@@ -1,6 +1,7 @@
 import ButtonCreateRound from "@/components/button-create-round"
 import { PerPageDropdown } from "@/components/per-page-dropdown"
 import RecipeCard from "@/components/recipe-card"
+import { RecipeFilters } from "@/components/recipe-filters"
 import { SearchInput } from "@/components/search-input"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,7 +21,11 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from "@/components/ui/pagination"
-import { getUserRecipes } from "@/lib/prisma/getUserRecipes"
+import {
+	getUserIngredients,
+	getUserRecipes,
+	getUserTags,
+} from "@/lib/get-user-info"
 import { searchParamsCache } from "@/lib/search-params"
 import type { Recipe } from "@/prisma"
 import { FileXCorner } from "lucide-react"
@@ -31,18 +36,57 @@ type PageProps = {
 }
 
 export default async function DashboardPage({ searchParams }: PageProps) {
-	const { q, page, perPage } = await searchParamsCache.parse(searchParams)
+	const { q, page, perPage, category, prepTime, tags, ingredients } =
+		await searchParamsCache.parse(searchParams)
 
 	const { recipes, total } = await getUserRecipes(
-		["id", "slug", "name", "prepTime", "tags", "createdBy"],
-		{ search: q, page, limit: perPage },
+		["id", "slug", "name", "prepTime", "tags", "createdBy", "category"],
+		{
+			search: q,
+			page,
+			limit: perPage,
+			category,
+			prepTimeMax: prepTime,
+			tags,
+			ingredients,
+		},
 	)
 
-	const hasActiveFilters = q.length > 0
+	const availableTags = await getUserTags()
+	const availableIngredients = await getUserIngredients()
+
+	const hasActiveFilters =
+		q.length > 0 ||
+		!!category ||
+		!!prepTime ||
+		tags.length > 0 ||
+		ingredients.length > 0
+
 	const totalPages = Math.ceil(total / perPage)
 
-	const buildLink = (newPage: number) =>
-		`/dashboard?q=${encodeURIComponent(q)}&page=${newPage}&perPage=${perPage}`
+	const buildLink = (newPage: number) => {
+		const params = new URLSearchParams()
+		if (q) params.set("q", q)
+		params.set("page", newPage.toString())
+		params.set("perPage", perPage.toString())
+		if (category) params.set("category", category)
+		if (prepTime) params.set("prepTime", prepTime.toString())
+
+		if (tags.length > 0) {
+			for (const tag of tags) {
+				params.append("tags", tag)
+			}
+		}
+
+		if (ingredients.length > 0) {
+			for (const ing of ingredients) {
+				params.append("ingredients", ing)
+			}
+		}
+
+		return `/dashboard?${params.toString()}`
+	}
+
 	const allPages = getPageNumbers(page, totalPages)
 
 	return (
@@ -53,6 +97,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 				{(total > 0 || hasActiveFilters) && (
 					<div className="flex items-center gap-2">
 						<SearchInput />
+						<RecipeFilters
+							availableTags={availableTags}
+							availableIngredients={availableIngredients}
+						/>
 						<PerPageDropdown />
 					</div>
 				)}
@@ -69,7 +117,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 						</EmptyTitle>
 						<EmptyDescription>
 							{hasActiveFilters
-								? `No recipes found matching "${q}". Try a different search term.`
+								? "No recipes found matching your filters. Try adjusting them."
 								: "You haven't created any recipes yet. Get started by creating your first recipe."}
 						</EmptyDescription>
 					</EmptyHeader>
@@ -150,7 +198,6 @@ function getPageNumbers(
 	totalPages: number,
 ): (number | string)[] {
 	if (totalPages <= 0) return []
-
 	const pages = new Set([
 		1,
 		totalPages,
@@ -158,14 +205,11 @@ function getPageNumbers(
 		currentPage - 1,
 		currentPage + 1,
 	])
-
 	const sortedPages = Array.from(pages)
 		.filter((p) => p >= 1 && p <= totalPages)
 		.sort((a, b) => a - b)
-
 	const result = []
 	let previous = 0
-
 	for (const p of sortedPages) {
 		if (previous > 0) {
 			if (p - previous === 2) {
@@ -177,6 +221,5 @@ function getPageNumbers(
 		result.push(p)
 		previous = p
 	}
-
 	return result
 }
