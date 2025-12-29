@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import type { Metadata } from "next"
 import { Geist } from "next/font/google"
+import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { extractRouterConfig } from "uploadthing/server"
 
 export const metadata: Metadata = {
@@ -30,8 +31,7 @@ export default function RootLayout({
 				<body>
 					<NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
 					<Navbar />
-
-					{children}
+					<NuqsAdapter>{children}</NuqsAdapter>
 					{/* <Footer /> */}
 					<Analytics />
 					<SpeedInsights />

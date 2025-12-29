@@ -2,15 +2,21 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/prisma/getCurrentUser"
 import type { Prisma } from "@/prisma"
 
-/**
- * Fetch recipes for the current user, with optional field selection.
- * Example: getUserRecipes(['id', 'name'])
- */
+interface GetUserRecipesOptions {
+	search?: string
+	page?: number
+	limit?: number
+}
+
 export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 	fields?: K[],
+	options: GetUserRecipesOptions = {},
 ) {
 	const user = await getCurrentUser()
-	if (!user) return []
+	if (!user) return { recipes: [], total: 0 }
+
+	const { search, page = 1, limit = 10 } = options
+	const skip = (page - 1) * limit
 
 	const select = fields?.reduce(
 		(acc, key) => {
@@ -20,10 +26,28 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 		{} as Record<K, true>,
 	)
 
-	return prisma.recipe.findMany({
-		where: { createdById: user.clerkId },
-		select: select as Prisma.RecipeSelect,
-	})
+	const where: Prisma.RecipeWhereInput = {
+		createdById: user.clerkId,
+		...(search && {
+			OR: [
+				{ name: { contains: search, mode: "insensitive" } },
+				{ description: { contains: search, mode: "insensitive" } },
+			],
+		}),
+	}
+
+	const [recipes, total] = await Promise.all([
+		prisma.recipe.findMany({
+			where,
+			select: select as Prisma.RecipeSelect,
+			skip,
+			take: limit,
+			orderBy: { updatedAt: "desc" },
+		}),
+		prisma.recipe.count({ where }),
+	])
+
+	return { recipes, total }
 }
 
 /**
@@ -38,7 +62,6 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 	const user = await getCurrentUser()
 	if (!user) return null
 
-	// If specific fields requested, build a select and always include relations
 	if (fields && fields.length > 0) {
 		const partialSelect = fields.reduce(
 			(acc, key) => {
@@ -70,7 +93,6 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 		})
 		if (!recipe) return null
 
-		// Create a new object without the excluded keys to avoid mutating the original
 		const filtered = Object.fromEntries(
 			Object.entries(recipe).filter(([k]) => !excludeFields.includes(k as K)),
 		) as typeof recipe

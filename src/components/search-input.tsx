@@ -1,0 +1,27 @@
+"use client"
+
+import { Input } from "@/components/ui/input"
+import { Search } from "lucide-react"
+import { useQueryState } from "nuqs"
+
+export function SearchInput() {
+	const [search, setSearch] = useQueryState("q", {
+		defaultValue: "",
+		parse: (value) => value || "",
+		shallow: false,
+		throttleMs: 300,
+	})
+
+	return (
+		<div className="relative w-full sm:w-64">
+			<Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+			<Input
+				type="search"
+				placeholder="Search recipes..."
+				className="pl-8"
+				value={search}
+				onChange={(e) => setSearch(e.target.value)}
+			/>
+		</div>
+	)
+}
