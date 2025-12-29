@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
-import { useQueryState } from "nuqs"
+import { parseAsInteger, useQueryState } from "nuqs"
 
 export function SearchInput() {
 	const [search, setSearch] = useQueryState("q", {
@@ -11,7 +11,14 @@ export function SearchInput() {
 		shallow: false,
 		throttleMs: 300,
 	})
-	const [, setPage] = useQueryState("page")
+
+	const [, setPage] = useQueryState(
+		"page",
+		parseAsInteger.withDefault(1).withOptions({
+			shallow: false,
+			history: "push",
+		}),
+	)
 
 	return (
 		<div className="relative w-full sm:w-64">
@@ -23,7 +30,7 @@ export function SearchInput() {
 				value={search}
 				onChange={(e) => {
 					setSearch(e.target.value)
-					setPage("1")
+					setPage(1)
 				}}
 			/>
 		</div>

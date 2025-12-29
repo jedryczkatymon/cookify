@@ -1,11 +1,27 @@
 import { prisma } from "@/lib/prisma"
-import { getCurrentUser } from "@/lib/prisma/getCurrentUser"
 import type { Prisma } from "@/prisma"
+import { currentUser } from "@clerk/nextjs/server"
 
 interface GetUserRecipesOptions {
 	search?: string
 	page?: number
 	limit?: number
+	category?: string | null
+	prepTimeMax?: number | null
+	tags?: string[]
+	ingredients?: string[]
+}
+
+export async function getCurrentUser() {
+	const user = await currentUser()
+
+	if (!user) return null
+
+	const dbUser = await prisma.user.findUnique({
+		where: { clerkId: user.id },
+	})
+
+	return dbUser
 }
 
 export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
@@ -15,7 +31,16 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 	const user = await getCurrentUser()
 	if (!user) return { recipes: [], total: 0 }
 
-	const { search, page = 1, limit = 10 } = options
+	const {
+		search,
+		page = 1,
+		limit = 10,
+		category,
+		prepTimeMax,
+		tags,
+		ingredients,
+	} = options
+
 	const validPage = Math.max(1, page)
 	const validLimit = Math.max(1, limit)
 	const skip = (validPage - 1) * validLimit
@@ -30,12 +55,26 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 
 	const where: Prisma.RecipeWhereInput = {
 		createdById: user.clerkId,
-		...(search && {
-			OR: [
-				{ name: { contains: search, mode: "insensitive" } },
-				{ description: { contains: search, mode: "insensitive" } },
-			],
-		}),
+		AND: [
+			search
+				? {
+						OR: [
+							{ name: { contains: search, mode: "insensitive" } },
+							{ description: { contains: search, mode: "insensitive" } },
+						],
+					}
+				: {},
+
+			category ? { category } : {},
+
+			prepTimeMax ? { prepTime: { lte: prepTimeMax } } : {},
+
+			tags && tags.length > 0 ? { tags: { some: { name: { in: tags } } } } : {},
+
+			ingredients && ingredients.length > 0
+				? { ingredients: { some: { product: { in: ingredients } } } }
+				: {},
+		],
 	}
 
 	const [recipes, total] = await Promise.all([
@@ -50,6 +89,34 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 	])
 
 	return { recipes, total }
+}
+
+export async function getUserTags() {
+	const user = await getCurrentUser()
+	if (!user) return []
+
+	const tags = await prisma.tag.findMany({
+		where: { recipe: { createdById: user.clerkId } },
+		select: { name: true },
+		distinct: ["name"],
+		orderBy: { name: "asc" },
+	})
+
+	return tags.map((t: { name: string }) => t.name)
+}
+
+export async function getUserIngredients() {
+	const user = await getCurrentUser()
+	if (!user) return []
+
+	const ingredients = await prisma.ingredient.findMany({
+		where: { recipe: { createdById: user.clerkId } },
+		select: { product: true },
+		distinct: ["product"],
+		orderBy: { product: "asc" },
+	})
+
+	return ingredients.map((i: { product: string }) => i.product)
 }
 
 /**
@@ -86,8 +153,6 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 		})
 	}
 
-	// If excludeFields provided, fetch the full recipe (including relations)
-	// then remove the excluded keys from the returned object.
 	if (excludeFields && excludeFields.length > 0) {
 		const recipe = await prisma.recipe.findFirst({
 			where: { slug, createdById: user.clerkId },
@@ -102,7 +167,6 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 		return filtered
 	}
 
-	// Default: return full recipe including relations
 	return prisma.recipe.findFirst({
 		where: { slug, createdById: user.clerkId },
 		include: { ingredients: true, steps: true, tags: true, uploads: true },

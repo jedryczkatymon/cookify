@@ -11,27 +11,21 @@ async function main() {
 		)
 		process.exit(1)
 	}
-	
+
 	console.log("Clearing existing recipe data...")
-	// Optional: Clear existing data to avoid unique constraint errors on tags/slugs
-	// await prisma.tag.deleteMany({})
-	// await prisma.step.deleteMany({})
-	// await prisma.ingredient.deleteMany({})
-	// await prisma.recipe.deleteMany({})
+	await prisma.tag.deleteMany({})
+	await prisma.step.deleteMany({})
+	await prisma.ingredient.deleteMany({})
+	await prisma.recipe.deleteMany({})
 
 	console.log("Generating 100 recipes...")
 
 	const recipesData = Array.from({ length: 100 }).map(() => ({
+		slug: faker.string.alphanumeric(10),
 		name: faker.food.dish(),
 		description: faker.food.description(),
 		cuisine: faker.food.ethnicCategory(),
-		category: faker.helpers.arrayElement([
-			"Breakfast",
-			"Lunch",
-			"Dinner",
-			"Dessert",
-			"Snack",
-		]),
+		category: faker.helpers.arrayElement(["Breakfast", "Lunch", "Dinner"]),
 		servings: faker.number.int({ min: 1, max: 8 }),
 		prepTime: faker.number.int({ min: 10, max: 120 }),
 		notes: faker.lorem.sentence(),
@@ -46,15 +40,16 @@ async function main() {
 		select: { id: true },
 	})
 
-	const stepsData: Array<{ order: number; content: string; recipeId: string }> =
+	const stepsData: Array<{ order: number; content: string; recipeId: number }> =
 		[]
 	const ingredientsData: Array<{
-		name: string
+		product: string
 		amount: number
 		unit: string
-		recipeId: string
+		section: string
+		recipeId: number
 	}> = []
-	const tagsData: Array<{ name: string; recipeId: string }> = []
+	const tagsData: Array<{ name: string; recipeId: number }> = []
 
 	for (const recipe of createdRecipes) {
 		const stepCount = faker.number.int({ min: 3, max: 5 })
@@ -69,7 +64,7 @@ async function main() {
 		const ingredientCount = faker.number.int({ min: 4, max: 8 })
 		for (let i = 0; i < ingredientCount; i++) {
 			ingredientsData.push({
-				name: faker.food.ingredient(),
+				product: faker.food.ingredient(),
 				amount: faker.number.float({ min: 1, max: 500, fractionDigits: 2 }),
 				unit: faker.helpers.arrayElement([
 					"g",
@@ -79,14 +74,23 @@ async function main() {
 					"tsp",
 					"cups",
 				]),
+				section: faker.helpers.arrayElement([
+					"Main",
+					"Sauce",
+					"Garnish",
+					"Marinade",
+				]),
 				recipeId: recipe.id,
 			})
 		}
 
-		tagsData.push({
-			name: `${faker.word.adjective()}-${recipe.id}`,
-			recipeId: recipe.id,
-		})
+		const tagCount = faker.number.int({ min: 2, max: 4 })
+		for (let i = 0; i < tagCount; i++) {
+			tagsData.push({
+				name: `${faker.word.adjective()}-${recipe.id}-${i}`,
+				recipeId: recipe.id,
+			})
+		}
 	}
 
 	console.log("Inserting relations...")
