@@ -6,14 +6,14 @@ import Link from "next/link"
 
 export default function RecipeCard({ recipe }: { recipe: Recipe }) {
 	return (
-		<div className="">
+		<div className="flex items-center justify-between rounded-md border bg-white p-4 shadow-sm">
 			<Link key={recipe.id} href={`/dashboard/recipe/${recipe.slug}`}>
-				<div className="rounded-md border bg-white p-4 shadow-sm">
-					{recipe.name}
-				</div>
+				<div className="">{recipe.name}</div>
 			</Link>
-			<DialogDelete slug={recipe.slug} />
-			<EditButton slug={recipe.slug} />
+			<div className="flex gap-2">
+				<DialogDelete slug={recipe.slug} />
+				<EditButton slug={recipe.slug} />
+			</div>
 		</div>
 	)
 }
