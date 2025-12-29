@@ -16,7 +16,8 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 	if (!user) return { recipes: [], total: 0 }
 
 	const { search, page = 1, limit = 10 } = options
-	const skip = (page - 1) * limit
+	const validPage = Math.max(1, page)
+	const skip = (validPage - 1) * limit
 
 	const select = fields?.reduce(
 		(acc, key) => {

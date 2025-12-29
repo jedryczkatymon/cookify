@@ -42,8 +42,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 	const totalPages = Math.ceil(total / perPage)
 
 	const buildLink = (newPage: number) =>
-		`/dashboard?q=${q}&page=${newPage}&perPage=${perPage}`
-
+		`/dashboard?q=${encodeURIComponent(q)}&page=${newPage}&perPage=${perPage}`
 	const allPages = getPageNumbers(page, totalPages)
 
 	return (

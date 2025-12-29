@@ -27,7 +27,7 @@ model Recipe {
   tags        Tag[]
   uploads     Upload?
 
-  @@index([name])
+  @@index([name, description])
 }
 
 model Tag {

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { faker } from "@faker-js/faker"
 import "dotenv/config"
+
 async function main() {
 	const CLERK_ID = process.env.CLERK_ID
 
@@ -62,7 +63,7 @@ async function main() {
 		for (let i = 0; i < ingredientCount; i++) {
 			ingredientsData.push({
 				name: faker.food.ingredient(),
-				amount: Number.parseFloat(faker.finance.amount({ min: 1, max: 500 })),
+				amount: faker.number.float({ min: 1, max: 500, fractionDigits: 2 }),
 				unit: faker.helpers.arrayElement([
 					"g",
 					"kg",

@@ -11,6 +11,7 @@ export function SearchInput() {
 		shallow: false,
 		throttleMs: 300,
 	})
+	const [, setPage] = useQueryState("page")
 
 	return (
 		<div className="relative w-full sm:w-64">
@@ -20,7 +21,10 @@ export function SearchInput() {
 				placeholder="Search recipes..."
 				className="pl-8"
 				value={search}
-				onChange={(e) => setSearch(e.target.value)}
+				onChange={(e) => {
+					setSearch(e.target.value)
+					setPage(null)
+				}}
 			/>
 		</div>
 	)
