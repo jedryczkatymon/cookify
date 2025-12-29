@@ -28,6 +28,7 @@ model Recipe {
   uploads     Upload?
 
   @@index([name])
+  @@index([description])
 }
 
 model Tag {
