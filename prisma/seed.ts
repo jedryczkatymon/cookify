@@ -21,7 +21,7 @@ async function main() {
 	console.log("Generating 100 recipes...")
 
 	const recipesData = Array.from({ length: 100 }).map(() => ({
-		slug: faker.string.alphanumeric(10),
+		slug: faker.string.nanoid(10),
 		name: faker.food.dish(),
 		description: faker.food.description(),
 		cuisine: faker.food.ethnicCategory(),
