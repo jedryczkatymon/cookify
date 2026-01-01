@@ -56,6 +56,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
+      - name: Migrate database
+        run: pnpm exec prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}      
+
       - name: Build
         run: pnpm build
         env:

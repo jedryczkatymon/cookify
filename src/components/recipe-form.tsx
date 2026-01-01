@@ -50,32 +50,32 @@ type RecipeWithRelations = Recipe & {
 
 const formSchema = z.object({
 	name: z.string().min(1).max(50),
-	description: z.string().optional(),
+	description: z.string().optional().or(z.literal("")),
 	tags: z.array(z.string()).optional(),
-	category: z.string().optional(),
+	category: z.string().optional().or(z.literal("")),
 	servings: z.preprocess(
-		(v) => (v === "" ? undefined : Number(v)),
-		z.number().min(1),
+		(v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+		z.number().min(1).optional(),
 	),
 	prepTime: z.preprocess(
-		(v) => (v === "" ? undefined : Number(v)),
+		(v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
 		z.number().optional(),
 	),
-	notes: z.string().optional(),
+	notes: z.string().optional().or(z.literal("")),
 	ingredients: z
 		.array(
 			z.object({
 				amount: z.preprocess(
-					(v) => (v === "" ? undefined : Number(v)),
+					(v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
 					z.number().optional(),
 				),
-				unit: z.string().optional(),
-				product: z.string().min(1),
+				unit: z.string().optional().or(z.literal("")),
+				product: z.string().min(1).optional().or(z.literal("")),
 			}),
 		)
-		.min(1),
-	steps: z.string().min(1),
-	imageUrl: z.string().optional(),
+		.optional(),
+	steps: z.string().optional().or(z.literal("")),
+	imageUrl: z.string().optional().or(z.literal("")),
 })
 
 export default function RecipeForm({
@@ -305,7 +305,7 @@ export default function RecipeForm({
 										<Button
 											variant="outline"
 											className={cn(
-												"w-[200px] justify-between",
+												"w-50 justify-between",
 												!field.value && "text-muted-foreground",
 											)}
 											aria-haspopup="listbox"
@@ -315,7 +315,7 @@ export default function RecipeForm({
 										</Button>
 									</FormControl>
 								</PopoverTrigger>
-								<PopoverContent className="w-[200px] p-0">
+								<PopoverContent className="w-50 p-0">
 									<Command>
 										<CommandInput placeholder="Search meal..." />
 										<CommandList>
