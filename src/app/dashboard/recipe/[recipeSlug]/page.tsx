@@ -23,8 +23,7 @@ export default async function Recipe({
 	return (
 		<div className="mx-auto max-w-3xl py-10">
 			{" "}
-			<>
-				<header>
+			<header>
 					<H1>{recipe.name}</H1>
 
 					{heroImage && (
@@ -98,7 +97,6 @@ export default async function Recipe({
 						<p className="mt-2">{recipe.notes}</p>
 					</section>
 				) : null}
-			</>
 			<div className="mt-10">
 				<DialogDelete slug={recipeSlug} />
 				<EditButton slug={recipeSlug} />
