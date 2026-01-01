@@ -40,15 +40,15 @@ model Tag {
 
 model Step {
   id       Int    @id @default(autoincrement())
-  order    Int
-  content  String
+  order    Int?
+  content  String?
   recipeId Int
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Ingredient {
   id       Int     @id @default(autoincrement())
-  product  String
+  product  String?
   amount   Float?
   unit     String?
   section  String?
