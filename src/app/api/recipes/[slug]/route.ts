@@ -25,7 +25,6 @@ export async function PUT(
 		const json = form.get("data")?.toString()
 		const values = JSON.parse(json || "{}")
 
-		// ----- UPDATE RECIPE FIELDS -----
 		await prisma.recipe.update({
 			where: { id: existing.id },
 			data: {
@@ -34,11 +33,11 @@ export async function PUT(
 				category: values.category,
 				servings: values.servings,
 				prepTime: values.prepTime,
+				calories: values.calories,
 				notes: values.notes,
 			},
 		})
 
-		// ----- FIX: HANDLE IMAGE UPLOAD CONSTRAINT -----
 		if (values.imageUrl) {
 			const newUpload = await prisma.upload.findFirst({
 				where: { url: values.imageUrl },
@@ -67,7 +66,6 @@ export async function PUT(
 			}
 		}
 
-		// ----- STEPS (replace) -----
 		const stepsArr: string[] = (values.steps ?? "")
 			.toString()
 			.split(/\n\s*\n/)
@@ -84,7 +82,6 @@ export async function PUT(
 			await prisma.step.createMany({ data: stepsData })
 		}
 
-		// ----- INGREDIENTS (replace) -----
 		await prisma.ingredient.deleteMany({ where: { recipeId: existing.id } })
 		if (Array.isArray(values.ingredients) && values.ingredients.length > 0) {
 			const ingredientsData = (values.ingredients as Ingredient[]).map(
@@ -98,7 +95,6 @@ export async function PUT(
 			await prisma.ingredient.createMany({ data: ingredientsData })
 		}
 
-		// ----- TAGS (sync: add new, disconnect removed) -----
 		const newTags = Array.isArray(values.tags) ? (values.tags as string[]) : []
 		const currentTagNames = (existing.tags ?? [])
 			.map((t: Tag) => t.name)

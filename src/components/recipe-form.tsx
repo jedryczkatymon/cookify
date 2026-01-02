@@ -60,6 +60,10 @@ const formSchema = z.object({
 		(v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
 		z.number().optional(),
 	),
+	calories: z.preprocess(
+		(v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+		z.number().optional(),
+	),
 	notes: z.string().optional().or(z.literal("")),
 	ingredients: z
 		.array(
@@ -114,6 +118,7 @@ export default function RecipeForm({
 			category: recipe?.category ?? "",
 			servings: recipe?.servings ?? undefined,
 			prepTime: recipe?.prepTime ?? undefined,
+			calories: recipe?.calories ?? undefined,
 			notes: recipe?.notes ?? "",
 			ingredients: initialIngredients,
 			steps: initialSteps,
@@ -349,7 +354,7 @@ export default function RecipeForm({
 						</FormItem>
 					)}
 				/>
-				<div className="grid grid-cols-12 gap-4">
+				<div className="grid grid-cols-18 gap-4">
 					<div className="col-span-6">
 						<FormField
 							control={form.control}
@@ -381,6 +386,27 @@ export default function RecipeForm({
 									<FormControl>
 										<Input
 											placeholder="e.g 20"
+											type="number"
+											{...field}
+											value={field.value ?? ""}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</div>
+
+					<div className="col-span-6">
+						<FormField
+							control={form.control}
+							name="calories"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Calories</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="e.g 500"
 											type="number"
 											{...field}
 											value={field.value ?? ""}

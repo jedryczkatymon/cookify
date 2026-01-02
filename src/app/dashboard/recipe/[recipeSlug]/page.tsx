@@ -47,6 +47,7 @@ export default async function Recipe({
 					initialServings={recipe.servings ?? 1}
 					ingredients={recipe.ingredients ?? []}
 					prepTime={recipe.prepTime}
+					calories={recipe.calories}
 					category={recipe.category}
 					tags={recipe.tags}
 				/>
