@@ -65,7 +65,7 @@ async function main() {
 		for (let i = 0; i < ingredientCount; i++) {
 			ingredientsData.push({
 				product: faker.food.ingredient(),
-				amount: faker.number.float({ min: 1, max: 500, fractionDigits: 2 }),
+				amount: faker.number.float({ min: 1, max: 1000, fractionDigits: 2 }),
 				unit: faker.helpers.arrayElement([
 					"g",
 					"kg",
