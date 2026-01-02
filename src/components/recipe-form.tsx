@@ -38,7 +38,6 @@ import { useState } from "react"
 import { type Resolver, useFieldArray, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
-import { ca } from "zod/v4/locales"
 import DialogDelete from "./dialog-delete"
 
 type RecipeWithRelations = Recipe & {
