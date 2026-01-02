@@ -12,7 +12,7 @@
 		"db:migrate": "prisma migrate deploy",
 		"db:push": "prisma db push",
 		"db:studio": "prisma studio",
-		"db": "prisma generate && prisma db push",
+		"db": "prisma migrate dev && prisma generate && prisma db push",
 		"precommit": "biome check . && next build",
 		"dev": "next dev --turbo",
 		"postinstall": "prisma generate",
