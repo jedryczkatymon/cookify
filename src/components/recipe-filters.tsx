@@ -60,6 +60,11 @@ export function RecipeFilters({
 		parseAsInteger.withOptions({ shallow: false }),
 	)
 
+	const [maxCalories, setMaxCalories] = useQueryState(
+		"calories",
+		parseAsInteger.withOptions({ shallow: false }),
+	)
+
 	const [tags, setTags] = useQueryState(
 		"tags",
 		parseAsArrayOf(parseAsString)
@@ -77,12 +82,14 @@ export function RecipeFilters({
 	const activeFilterCount =
 		(category ? 1 : 0) +
 		(maxPrepTime ? 1 : 0) +
+		(maxCalories ? 1 : 0) +
 		tags.length +
 		ingredients.length
 
 	const clearFilters = () => {
 		setCategory(null)
 		setMaxPrepTime(null)
+		setMaxCalories(null)
 		setTags(null)
 		setIngredients(null)
 	}
@@ -168,6 +175,23 @@ export function RecipeFilters({
 										? Number.parseInt(e.target.value)
 										: null
 									setMaxPrepTime(val)
+									setPage(1)
+								}}
+							/>
+						</div>
+
+						<div className="grid gap-2">
+							<Label htmlFor="calories">Max Calories</Label>
+							<Input
+								id="calories"
+								type="number"
+								placeholder="e.g. 500"
+								value={maxCalories || ""}
+								onChange={(e) => {
+									const val = e.target.value
+										? Number.parseInt(e.target.value)
+										: null
+									setMaxCalories(val)
 									setPage(1)
 								}}
 							/>

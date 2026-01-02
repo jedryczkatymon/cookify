@@ -37,17 +37,36 @@ type PageProps = {
 }
 
 export default async function DashboardPage({ searchParams }: PageProps) {
-	const { q, page, perPage, category, prepTime, tags, ingredients, sort } =
-		await searchParamsCache.parse(searchParams)
+	const {
+		q,
+		page,
+		perPage,
+		category,
+		prepTime,
+		calories,
+		tags,
+		ingredients,
+		sort,
+	} = await searchParamsCache.parse(searchParams)
 
 	const { recipes, total } = await getUserRecipes(
-		["id", "slug", "name", "prepTime", "tags", "createdBy", "category"],
+		[
+			"id",
+			"slug",
+			"name",
+			"prepTime",
+			"calories",
+			"tags",
+			"createdBy",
+			"category",
+		],
 		{
 			search: q,
 			page,
 			limit: perPage,
 			category,
-			prepTimeMax: prepTime,
+			prepTime: prepTime,
+			calories: calories,
 			tags,
 			ingredients,
 			sort,
@@ -61,6 +80,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 		q.length > 0 ||
 		!!category ||
 		!!prepTime ||
+		!!calories ||
 		tags.length > 0 ||
 		ingredients.length > 0
 
@@ -73,6 +93,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 		params.set("perPage", perPage.toString())
 		if (category) params.set("category", category)
 		if (prepTime) params.set("prepTime", prepTime.toString())
+		if (calories) params.set("calories", calories.toString())
 		if (sort) params.set("sort", sort)
 
 		if (tags.length > 0) {

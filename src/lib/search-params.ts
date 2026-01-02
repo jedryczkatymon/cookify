@@ -11,6 +11,7 @@ export const searchParamsCache = createSearchParamsCache({
 	perPage: parseAsInteger.withDefault(10),
 	category: parseAsString,
 	prepTime: parseAsInteger,
+	calories: parseAsInteger,
 	tags: parseAsArrayOf(parseAsString).withDefault([]),
 	ingredients: parseAsArrayOf(parseAsString).withDefault([]),
 	sort: parseAsString.withDefault("createdAt.desc"),

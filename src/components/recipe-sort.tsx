@@ -20,6 +20,8 @@ const sortOptions = [
 	{ label: "Prep Time (Longest)", value: "prepTime.desc" },
 	{ label: "Ingredients (Least)", value: "ingredientCount.asc" },
 	{ label: "Ingredients (Most)", value: "ingredientCount.desc" },
+	{ label: "Calories (Lowest)", value: "calories.asc" },
+	{ label: "Calories (Highest)", value: "calories.desc" },
 ]
 
 export function RecipeSort() {

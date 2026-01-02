@@ -7,7 +7,8 @@ interface GetUserRecipesOptions {
 	page?: number
 	limit?: number
 	category?: string | null
-	prepTimeMax?: number | null
+	prepTime?: number | null
+	calories?: number | null
 	tags?: string[]
 	ingredients?: string[]
 	sort?: string
@@ -37,7 +38,8 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 		page = 1,
 		limit = 10,
 		category,
-		prepTimeMax,
+		prepTime,
+		calories,
 		tags,
 		ingredients,
 		sort = "createdAt.desc",
@@ -62,6 +64,9 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 			break
 		case "ingredientCount":
 			orderBy = [{ ingredients: { _count: dir } }, { id: "desc" }]
+			break
+		case "calories":
+			orderBy = [{ calories: dir }, { id: "desc" }]
 			break
 		default:
 			orderBy = [{ createdAt: "desc" }, { id: "desc" }]
@@ -93,7 +98,9 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 
 			category ? { category } : {},
 
-			prepTimeMax ? { prepTime: { lte: prepTimeMax } } : {},
+			prepTime ? { prepTime: { lte: prepTime } } : {},
+
+			calories ? { calories: { lte: calories } } : {},
 
 			tags && tags.length > 0 ? { tags: { some: { name: { in: tags } } } } : {},
 
