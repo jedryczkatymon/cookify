@@ -31,7 +31,6 @@ import { cn } from "@/lib/utils"
 import type { Ingredient, Recipe, Step, Tag, Upload } from "@/prisma"
 import { useUploadThing } from "@/utils/uploadthing"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Dialog } from "@radix-ui/react-dialog"
 import { Check, ChevronsUpDown, Minus, Plus } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -66,7 +65,8 @@ const formSchema = z.object({
 		.array(
 			z.object({
 				amount: z.preprocess(
-					(v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+					(v) =>
+						v === "" || v === null || v === undefined ? undefined : Number(v),
 					z.number().optional(),
 				),
 				unit: z.string().optional().or(z.literal("")),
