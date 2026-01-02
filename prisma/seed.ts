@@ -28,6 +28,7 @@ async function main() {
 		category: faker.helpers.arrayElement(["Breakfast", "Lunch", "Dinner"]),
 		servings: faker.number.int({ min: 1, max: 8 }),
 		prepTime: faker.number.int({ min: 10, max: 120 }),
+		calories: faker.number.int({ min: 10, max: 2000 }),
 		notes: faker.lorem.sentence(),
 		createdById: CLERK_ID,
 	}))

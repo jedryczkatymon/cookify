@@ -19,6 +19,7 @@ export async function POST(req: Request) {
 				category: values.category,
 				servings: values.servings,
 				prepTime: values.prepTime,
+				calories: values.calories,
 				notes: values.notes,
 				createdById: userId,
 			},

@@ -3,12 +3,13 @@
 import { Input } from "@/components/ui/input"
 import { H2 } from "@/components/ui/typography"
 import type { Ingredient } from "@/prisma"
-import { useState } from "react"
+import { type ChangeEvent, useState } from "react"
 
 interface RecipeScalerProps {
 	initialServings: number
 	ingredients: Ingredient[]
 	prepTime?: number | string | null
+	calories?: number | string | null
 	category?: string | null
 	tags?: { name: string }[]
 }
@@ -17,16 +18,30 @@ export default function RecipeScaler({
 	initialServings,
 	ingredients,
 	prepTime,
+	calories,
 	category,
 	tags,
 }: RecipeScalerProps) {
-	const [servings, setServings] = useState<number>(initialServings || 1)
+	const [servings, setServings] = useState<number | "">(initialServings || 1)
 	const base = initialServings && initialServings > 0 ? initialServings : 1
-	const ratio = servings / base
 
-	const handleServingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const val = Number.parseFloat(e.target.value)
-		setServings(Number.isNaN(val) || val < 1 ? 1 : val)
+	const currentServings = servings === "" ? 0 : servings
+	const ratio = currentServings / base
+
+	const handleServingsChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value
+
+		if (value === "") {
+			setServings("")
+		} else {
+			setServings(Number.parseInt(value))
+		}
+	}
+
+	const handleServingsBlur = () => {
+		if (servings === "") {
+			setServings(1)
+		}
 	}
 
 	const formatAmount = (amount: number | null) => {
@@ -34,6 +49,8 @@ export default function RecipeScaler({
 		const newAmount = amount * ratio
 		return Number.parseFloat(newAmount.toFixed(2))
 	}
+
+	const scaledCalories = calories ? Math.round(Number(calories) * ratio) : null
 
 	return (
 		<>
@@ -44,14 +61,17 @@ export default function RecipeScaler({
 					<span>Servings:</span>
 					<Input
 						type="number"
-						min={1}
+						min="1"
 						value={servings}
 						onChange={handleServingsChange}
+						onBlur={handleServingsBlur}
 						className="h-8 w-20 px-2 py-1 text-center"
 					/>
 				</div>
 
 				<span> · Prep: {prepTime ?? "—"} min</span>
+
+				<span> · Calories: {scaledCalories ?? "—"} kcal</span>
 			</div>
 
 			{tags && tags.length > 0 && (

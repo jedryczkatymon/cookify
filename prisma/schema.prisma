@@ -17,6 +17,7 @@ model Recipe {
   category    String?
   servings    Int?
   prepTime    Int?
+  calories    Int?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   notes       String?
