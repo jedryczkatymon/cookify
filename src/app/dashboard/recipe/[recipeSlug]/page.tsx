@@ -40,7 +40,7 @@ export default async function Recipe({
 				)}
 
 				{recipe.description ? (
-					<p style={{ marginTop: 16 }}>{recipe.description}</p>
+					<p className="mt-4">{recipe.description}</p>
 				) : null}
 
 				<RecipeScaler
@@ -48,21 +48,18 @@ export default async function Recipe({
 					ingredients={recipe.ingredients ?? []}
 					prepTime={recipe.prepTime}
 					category={recipe.category}
-					tags={recipe.tags as { name: string }[]}
+					tags={recipe.tags}
 				/>
 			</header>
 
-			<section style={{ marginTop: 24 }}>
+			<section className="mt-6">
 				<H2>Steps</H2>
 				<ol className="mt-4 list-inside list-decimal">
 					{(recipe.steps ?? [])
 						.slice()
 						.sort((a: Step, b: Step) => (a.order ?? 0) - (b.order ?? 0))
 						.map((s: Step) => (
-							<li
-								key={s.id}
-								style={{ whiteSpace: "pre-wrap", marginBottom: 12 }}
-							>
+							<li key={s.id} className="mb-3 whitespace-pre-wrap">
 								{s.content}
 							</li>
 						))}
@@ -70,7 +67,7 @@ export default async function Recipe({
 			</section>
 
 			{recipe.notes ? (
-				<section style={{ marginTop: 24 }}>
+				<section className="mt-6">
 					<H2>Notes</H2>
 					<p className="mt-2">{recipe.notes}</p>
 				</section>
