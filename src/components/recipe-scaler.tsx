@@ -34,7 +34,7 @@ export default function RecipeScaler({
 		if (value === "") {
 			setServings("")
 		} else {
-			setServings(Number.parseInt(value))
+			setServings(Number.parseFloat(value))
 		}
 	}
 
