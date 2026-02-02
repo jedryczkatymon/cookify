@@ -1,7 +1,4 @@
 import "@/styles/globals.css"
-import { ourFileRouter } from "@/app/api/uploadthing/core"
-// import { Footer } from '@/components/footer'
-import { Navbar } from "@/components/navbar"
 import { ClerkProvider } from "@clerk/nextjs"
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin"
 import { Analytics } from "@vercel/analytics/next"
@@ -10,6 +7,9 @@ import type { Metadata } from "next"
 import { Geist } from "next/font/google"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { extractRouterConfig } from "uploadthing/server"
+import { ourFileRouter } from "@/app/api/uploadthing/core"
+// import { Footer } from '@/components/footer'
+import { Navbar } from "@/components/navbar"
 
 export const metadata: Metadata = {
 	title: "Create T3 App",

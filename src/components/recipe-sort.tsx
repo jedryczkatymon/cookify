@@ -1,5 +1,7 @@
 "use client"
 
+import { ArrowUpDown, Check } from "lucide-react"
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -8,8 +10,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { ArrowUpDown, Check } from "lucide-react"
-import { parseAsInteger, parseAsString, useQueryStates } from "nuqs"
 
 const sortOptions = [
 	{ label: "Date Created (Newest)", value: "createdAt.desc" },

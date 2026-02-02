@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma"
-import type { Ingredient } from "@/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import type { Ingredient } from "@/prisma"
 
 export async function POST(req: Request) {
 	try {
@@ -21,7 +21,9 @@ export async function POST(req: Request) {
 				prepTime: values.prepTime,
 				calories: values.calories,
 				notes: values.notes,
-				createdById: userId,
+				createdBy: {
+					connect: { id: userId ?? undefined },
+				},
 			},
 		})
 

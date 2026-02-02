@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
-import { type FileRouter, createUploadthing } from "uploadthing/next"
+import { createUploadthing, type FileRouter } from "uploadthing/next"
+import { prisma } from "@/lib/prisma"
 
 const f = createUploadthing()
 

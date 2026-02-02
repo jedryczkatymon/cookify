@@ -1,8 +1,8 @@
 "use client"
+import Link from "next/link"
 import EditButton from "@/components/button-edit"
 import DialogDelete from "@/components/dialog-delete"
 import type { Recipe } from "@/prisma"
-import Link from "next/link"
 
 export default function RecipeCard({ recipe }: { recipe: Recipe }) {
 	return (

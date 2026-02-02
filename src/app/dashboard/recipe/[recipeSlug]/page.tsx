@@ -1,11 +1,11 @@
+import Image from "next/image"
+import { notFound } from "next/navigation"
 import EditButton from "@/components/button-edit"
 import DialogDelete from "@/components/dialog-delete"
 import RecipeScaler from "@/components/recipe-scaler"
 import { H1, H2 } from "@/components/ui/typography"
 import { getUserRecipeBySlug } from "@/lib/get-user-info"
 import type { Step } from "@/prisma"
-import Image from "next/image"
-import { notFound } from "next/navigation"
 
 export default async function Recipe({
 	params,

@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma"
-import type { Ingredient, Tag } from "@/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { UTApi } from "uploadthing/server"
+import { prisma } from "@/lib/prisma"
+import type { Ingredient, Tag } from "@/prisma"
 
 export async function PUT(
 	req: Request,
@@ -13,7 +13,7 @@ export async function PUT(
 		const { slug } = await params
 
 		const existing = await prisma.recipe.findUnique({
-			where: { slug, createdById: userId },
+			where: { slug, createdById: userId ?? undefined },
 			include: { ingredients: true, tags: true, steps: true },
 		})
 
@@ -56,7 +56,9 @@ export async function PUT(
 
 					try {
 						await utapi.deleteFiles(currentUpload.key)
-					} catch (e) {}
+					} catch (uploadError) {
+						console.error("UploadThing deletion error:", uploadError)
+					}
 				}
 
 				await prisma.upload.update({
@@ -105,7 +107,12 @@ export async function PUT(
 
 		const addPromises = toAdd.map((tagName) =>
 			prisma.tag.upsert({
-				where: { name: tagName },
+				where: {
+					name_recipeId: {
+						name: tagName,
+						recipeId: existing.id,
+					},
+				},
 				update: {
 					recipe: {
 						connect: { id: existing.id },
@@ -121,11 +128,11 @@ export async function PUT(
 		)
 
 		const removePromises = toRemove.map((tagName) =>
-			prisma.tag.update({
-				where: { name: tagName },
-				data: {
-					recipe: {
-						disconnect: { id: existing.id },
+			prisma.tag.delete({
+				where: {
+					name_recipeId: {
+						name: tagName,
+						recipeId: existing.id,
 					},
 				},
 			}),
@@ -156,7 +163,7 @@ export async function DELETE(
 		const { slug } = await params
 
 		const recipe = await prisma.recipe.findUnique({
-			where: { slug, createdById: userId },
+			where: { slug, createdById: userId ?? undefined },
 			include: { uploads: true },
 		})
 

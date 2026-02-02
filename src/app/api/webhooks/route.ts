@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma"
 import { verifyWebhook } from "@clerk/nextjs/webhooks"
 import type { NextRequest } from "next/server"
+import { prisma } from "@/lib/prisma"
 
 export async function POST(req: NextRequest) {
 	try {

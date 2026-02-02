@@ -1,4 +1,13 @@
 import {
+	Film,
+	MenuIcon,
+	Monitor,
+	TrendingUp,
+	UsersRound,
+	X,
+} from "lucide-react"
+import Link from "next/link"
+import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
@@ -11,15 +20,6 @@ import {
 	DrawerTitle,
 	DrawerTrigger,
 } from "@/components/ui/drawer"
-import {
-	Film,
-	MenuIcon,
-	Monitor,
-	TrendingUp,
-	UsersRound,
-	X,
-} from "lucide-react"
-import Link from "next/link"
 
 export function HamburgerMenu() {
 	return (

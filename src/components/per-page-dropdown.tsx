@@ -1,5 +1,6 @@
 "use client"
 
+import { parseAsInteger, useQueryState } from "nuqs"
 import {
 	Select,
 	SelectContent,
@@ -7,7 +8,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { parseAsInteger, useQueryState } from "nuqs"
 
 export function PerPageDropdown() {
 	const [perPage, setPerPage] = useQueryState(
