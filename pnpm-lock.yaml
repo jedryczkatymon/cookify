@@ -3673,8 +3673,6 @@ snapshots:
     dependencies:
       react: 19.2.4
 
-  uuid@10.0.0: {}
-
   valibot@1.2.0(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
