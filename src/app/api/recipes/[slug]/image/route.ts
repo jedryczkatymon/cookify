@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { UTApi } from "uploadthing/server"
+import { prisma } from "@/lib/prisma"
 
 const utapi = new UTApi()
 

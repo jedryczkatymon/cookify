@@ -1,5 +1,12 @@
 "use client"
 
+import { Check, Filter } from "lucide-react"
+import {
+	parseAsArrayOf,
+	parseAsInteger,
+	parseAsString,
+	useQueryState,
+} from "nuqs"
 import { Button } from "@/components/ui/button"
 import {
 	Command,
@@ -25,13 +32,6 @@ import {
 } from "@/components/ui/select"
 import { MEALS } from "@/lib/enums"
 import { cn } from "@/lib/utils"
-import { Check, Filter } from "lucide-react"
-import {
-	parseAsArrayOf,
-	parseAsInteger,
-	parseAsString,
-	useQueryState,
-} from "nuqs"
 
 interface RecipeFiltersProps {
 	availableTags: string[]
@@ -172,7 +172,7 @@ export function RecipeFilters({
 								value={maxPrepTime || ""}
 								onChange={(e) => {
 									const val = e.target.value
-										? Number.parseInt(e.target.value)
+										? Number.parseInt(e.target.value, 10)
 										: null
 									setMaxPrepTime(val)
 									setPage(1)
@@ -189,7 +189,7 @@ export function RecipeFilters({
 								value={maxCalories || ""}
 								onChange={(e) => {
 									const val = e.target.value
-										? Number.parseInt(e.target.value)
+										? Number.parseInt(e.target.value, 10)
 										: null
 									setMaxCalories(val)
 									setPage(1)

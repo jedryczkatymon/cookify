@@ -1,5 +1,7 @@
 "use client"
 
+import { Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,8 +13,6 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Trash2 } from "lucide-react"
-import { useRouter } from "next/navigation"
 
 export default function DialogDelete({ slug }: { slug: string }) {
 	const router = useRouter()

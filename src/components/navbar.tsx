@@ -1,8 +1,8 @@
 import {
-	SignInButton,
-	SignUpButton,
 	SignedIn,
 	SignedOut,
+	SignInButton,
+	SignUpButton,
 	UserButton,
 } from "@clerk/nextjs"
 import { CookingPot } from "lucide-react"

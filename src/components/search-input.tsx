@@ -1,8 +1,8 @@
 "use client"
 
-import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { parseAsInteger, useQueryState } from "nuqs"
+import { Input } from "@/components/ui/input"
 
 export function SearchInput() {
 	const [search, setSearch] = useQueryState("q", {

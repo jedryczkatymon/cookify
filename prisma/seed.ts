@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma"
 import { faker } from "@faker-js/faker"
+import { prisma } from "@/lib/prisma"
 import "dotenv/config"
 
 async function main() {

@@ -37,6 +37,7 @@ model Tag {
   name     String
   recipeId Int
   recipe  Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  @@unique([name, recipeId])
 }
 
 model Step {

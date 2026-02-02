@@ -1,9 +1,9 @@
 "use client"
 
+import { type ChangeEvent, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { H2 } from "@/components/ui/typography"
 import type { Ingredient } from "@/prisma"
-import { type ChangeEvent, useState } from "react"
 
 interface RecipeScalerProps {
 	initialServings: number
@@ -34,7 +34,7 @@ export default function RecipeScaler({
 		if (value === "") {
 			setServings("")
 		} else {
-			setServings(Number.parseInt(value))
+			setServings(Number.parseInt(value, 10))
 		}
 	}
 

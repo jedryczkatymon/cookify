@@ -1,6 +1,6 @@
+import { currentUser } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import type { Prisma } from "@/prisma"
-import { currentUser } from "@clerk/nextjs/server"
 
 interface GetUserRecipesOptions {
 	search?: string
@@ -149,7 +149,7 @@ export async function getUserIngredients() {
 		orderBy: { product: "asc" },
 	})
 
-	return ingredients.map((i: { product: string }) => i.product)
+	return ingredients.map((i: { product: string | null }) => i.product ?? "")
 }
 
 /**
@@ -178,6 +178,7 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 			ingredients: true,
 			steps: true,
 			tags: true,
+			uploads: true,
 		} as Prisma.RecipeSelect
 
 		return prisma.recipe.findFirst({
@@ -189,7 +190,7 @@ export async function getUserRecipeBySlug<K extends keyof Prisma.RecipeSelect>(
 	if (excludeFields && excludeFields.length > 0) {
 		const recipe = await prisma.recipe.findFirst({
 			where: { slug, createdById: user.clerkId },
-			include: { ingredients: true, steps: true, tags: true },
+			include: { ingredients: true, steps: true, tags: true, uploads: true },
 		})
 		if (!recipe) return null
 
