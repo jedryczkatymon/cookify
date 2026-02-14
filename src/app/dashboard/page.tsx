@@ -49,29 +49,17 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 		sort,
 	} = await searchParamsCache.parse(searchParams)
 
-	const { recipes, total } = await getUserRecipes(
-		[
-			"id",
-			"slug",
-			"name",
-			"prepTime",
-			"calories",
-			"tags",
-			"createdBy",
-			"category",
-		],
-		{
-			search: q,
-			page,
-			limit: perPage,
-			category,
-			prepTime: prepTime,
-			calories: calories,
-			tags,
-			ingredients,
-			sort,
-		},
-	)
+	const { recipes, total } = await getUserRecipes(["id", "slug", "name"], {
+		search: q,
+		page,
+		limit: perPage,
+		category,
+		prepTime: prepTime,
+		calories: calories,
+		tags,
+		ingredients,
+		sort,
+	})
 
 	const availableTags = await getUserTags()
 	const availableIngredients = await getUserIngredients()
