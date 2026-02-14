@@ -1,15 +1,19 @@
 "use client"
 
 import { Search } from "lucide-react"
-import { parseAsInteger, useQueryState } from "nuqs"
+import {
+	debounce,
+	defaultRateLimit,
+	parseAsInteger,
+	throttle,
+	useQueryState,
+} from "nuqs"
 import { Input } from "@/components/ui/input"
 
 export function SearchInput() {
 	const [search, setSearch] = useQueryState("q", {
 		defaultValue: "",
-		parse: (value) => value || "",
 		shallow: false,
-		throttleMs: 300,
 	})
 
 	const [, setPage] = useQueryState(
@@ -29,8 +33,20 @@ export function SearchInput() {
 				className="pl-8"
 				value={search}
 				onChange={(e) => {
-					setSearch(e.target.value)
-					setPage(1)
+					const value = e.target.value
+
+					setSearch(value, {
+						limitUrlUpdates: value === "" ? defaultRateLimit : debounce(500),
+					})
+
+					setPage(1, {
+						limitUrlUpdates: throttle(1000),
+					})
+				}}
+				onKeyDown={(e) => {
+					if (e.key === "Enter") {
+						setSearch(search, { limitUrlUpdates: defaultRateLimit })
+					}
 				}}
 			/>
 		</div>
