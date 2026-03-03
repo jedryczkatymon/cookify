@@ -21,7 +21,9 @@ const safeParseNumber = (val: unknown): number | undefined => {
 function parseIngredientString(str: string) {
 	// Regex: Start with Number + (Optional Unit) + Product
 	// e.g. "1 kg potatoes", "2 eggs", "salt"
-	const match = str.match(/^([\d.,]+)\s*([a-zA-Ząćęłńóśźż]{1,10}\.?\s+)?(.*)$/)
+	const match = str.match(
+		/^([\d.,]+)\s*([a-zA-Ząćęłńóśźż]{1,10}\.?)?\s*([\s\S]*)$/,
+	)
 
 	if (match?.[1]) {
 		return {
