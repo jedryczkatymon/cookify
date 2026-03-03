@@ -7,6 +7,10 @@ export async function POST(req: Request) {
 	try {
 		const { userId } = await auth()
 
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+		}
+
 		const form = await req.formData()
 		const json = form.get("data")?.toString()
 		const values = JSON.parse(json || "{}")
@@ -21,9 +25,7 @@ export async function POST(req: Request) {
 				prepTime: values.prepTime,
 				calories: values.calories,
 				notes: values.notes,
-				createdBy: {
-					connect: { id: userId ?? undefined },
-				},
+				createdById: userId,
 			},
 		})
 
