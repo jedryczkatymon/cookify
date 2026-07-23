@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server"
+import { revalidateTag } from "next/cache"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import type { Ingredient } from "@/prisma"
@@ -71,6 +72,10 @@ export async function POST(req: Request) {
 			await prisma.tag.createMany({
 				data: tagsData,
 			})
+		}
+
+		if (userId) {
+			revalidateTag(`recipes:user:${userId}`, "max")
 		}
 
 		return NextResponse.json({ recipe }, { status: 200 })

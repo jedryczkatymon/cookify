@@ -6,6 +6,7 @@ import type { NextConfig } from "next"
 import "./src/lib/env.js"
 
 const nextConfig: NextConfig = {
+	cacheComponents: true,
 	serverExternalPackages: ["@prisma/client", "prisma"],
 	images: {
 		remotePatterns: [
