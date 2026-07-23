@@ -1,5 +1,10 @@
+import { Suspense } from "react"
 import RecipeForm from "@/components/recipe-form"
 
 export default function RecipeFormPage() {
-	return <RecipeForm />
+	return (
+		<Suspense fallback={null}>
+			<RecipeForm />
+		</Suspense>
+	)
 }

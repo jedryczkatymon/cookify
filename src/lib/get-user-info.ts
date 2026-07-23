@@ -1,4 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server"
+import { cacheLife, cacheTag } from "next/cache"
+import { cache } from "react"
 import { prisma } from "@/lib/prisma"
 import type { Prisma } from "@/prisma"
 
@@ -14,7 +16,20 @@ interface GetUserRecipesOptions {
 	sort?: string
 }
 
-export async function getCurrentUser() {
+interface CachedRecipesOptions {
+	search: string
+	page: number
+	limit: number
+	category: string | null
+	prepTime: number | null
+	calories: number | null
+	tags: string[]
+	ingredients: string[]
+	sort: string
+	fields: string[]
+}
+
+export const getCurrentUser = cache(async () => {
 	const user = await currentUser()
 
 	if (!user) return null
@@ -24,25 +39,27 @@ export async function getCurrentUser() {
 	})
 
 	return dbUser
-}
+})
 
-export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
-	fields?: K[],
-	options: GetUserRecipesOptions = {},
+async function getUserRecipesCached(
+	clerkId: string,
+	options: CachedRecipesOptions,
 ) {
-	const user = await getCurrentUser()
-	if (!user) return { recipes: [], total: 0 }
+	"use cache"
+	cacheLife("minutes")
+	cacheTag(`recipes:user:${clerkId}`)
 
 	const {
 		search,
-		page = 1,
-		limit = 10,
+		page,
+		limit,
 		category,
 		prepTime,
 		calories,
 		tags,
 		ingredients,
-		sort = "createdAt.desc",
+		sort,
+		fields,
 	} = options
 
 	const [field, direction] = sort.split(".")
@@ -76,16 +93,16 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 	const validLimit = Math.max(1, limit)
 	const skip = (validPage - 1) * validLimit
 
-	const select = fields?.reduce(
+	const select = fields.reduce(
 		(acc, key) => {
-			acc[key] = true
+			acc[key as keyof Prisma.RecipeSelect] = true
 			return acc
 		},
-		{} as Record<K, true>,
+		{} as Record<string, true>,
 	)
 
 	const where: Prisma.RecipeWhereInput = {
-		createdById: user.clerkId,
+		createdById: clerkId,
 		AND: [
 			search
 				? {
@@ -102,9 +119,9 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 
 			calories ? { calories: { lte: calories } } : {},
 
-			tags && tags.length > 0 ? { tags: { some: { name: { in: tags } } } } : {},
+			tags.length > 0 ? { tags: { some: { name: { in: tags } } } } : {},
 
-			ingredients && ingredients.length > 0
+			ingredients.length > 0
 				? { ingredients: { some: { product: { in: ingredients } } } }
 				: {},
 		],
@@ -124,12 +141,13 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 	return { recipes, total }
 }
 
-export async function getUserTags() {
-	const user = await getCurrentUser()
-	if (!user) return []
+async function getUserTagsCached(clerkId: string) {
+	"use cache"
+	cacheLife("minutes")
+	cacheTag(`recipes:user:${clerkId}`)
 
 	const tags = await prisma.tag.findMany({
-		where: { recipe: { createdById: user.clerkId } },
+		where: { recipe: { createdById: clerkId } },
 		select: { name: true },
 		distinct: ["name"],
 		orderBy: { name: "asc" },
@@ -138,18 +156,54 @@ export async function getUserTags() {
 	return tags.map((t: { name: string }) => t.name)
 }
 
-export async function getUserIngredients() {
-	const user = await getCurrentUser()
-	if (!user) return []
+async function getUserIngredientsCached(clerkId: string) {
+	"use cache"
+	cacheLife("minutes")
+	cacheTag(`recipes:user:${clerkId}`)
 
 	const ingredients = await prisma.ingredient.findMany({
-		where: { recipe: { createdById: user.clerkId } },
+		where: { recipe: { createdById: clerkId } },
 		select: { product: true },
 		distinct: ["product"],
 		orderBy: { product: "asc" },
 	})
 
 	return ingredients.map((i: { product: string | null }) => i.product ?? "")
+}
+
+export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
+	fields?: K[],
+	options: GetUserRecipesOptions = {},
+) {
+	const user = await getCurrentUser()
+	if (!user) return { recipes: [], total: 0 }
+
+	return getUserRecipesCached(user.clerkId, {
+		search: options.search ?? "",
+		page: options.page ?? 1,
+		limit: options.limit ?? 10,
+		category: options.category ?? null,
+		prepTime: options.prepTime ?? null,
+		calories: options.calories ?? null,
+		tags: options.tags ?? [],
+		ingredients: options.ingredients ?? [],
+		sort: options.sort ?? "createdAt.desc",
+		fields: (fields ?? []) as string[],
+	})
+}
+
+export async function getUserTags() {
+	const user = await getCurrentUser()
+	if (!user) return []
+
+	return getUserTagsCached(user.clerkId)
+}
+
+export async function getUserIngredients() {
+	const user = await getCurrentUser()
+	if (!user) return []
+
+	return getUserIngredientsCached(user.clerkId)
 }
 
 /**

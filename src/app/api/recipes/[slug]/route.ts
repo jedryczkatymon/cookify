@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server"
+import { revalidateTag } from "next/cache"
 import { NextResponse } from "next/server"
 import { UTApi } from "uploadthing/server"
 import { prisma } from "@/lib/prisma"
@@ -145,6 +146,10 @@ export async function PUT(
 			include: { ingredients: true, tags: true, steps: true },
 		})
 
+		if (userId) {
+			revalidateTag(`recipes:user:${userId}`, "max")
+		}
+
 		return NextResponse.json({ recipe: updated }, { status: 200 })
 	} catch (err) {
 		console.error(err)
@@ -186,6 +191,10 @@ export async function DELETE(
 		await prisma.recipe.delete({
 			where: { id: recipe.id },
 		})
+
+		if (userId) {
+			revalidateTag(`recipes:user:${userId}`, "max")
+		}
 
 		return NextResponse.json({ message: "Deleted" }, { status: 200 })
 	} catch (err) {

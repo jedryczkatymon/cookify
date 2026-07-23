@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server"
+import { revalidateTag } from "next/cache"
 import { NextResponse } from "next/server"
 import { UTApi } from "uploadthing/server"
 import { prisma } from "@/lib/prisma"
@@ -41,6 +42,8 @@ export async function DELETE(
 		await prisma.recipe.delete({
 			where: { id: recipe.id },
 		})
+
+		revalidateTag(`recipes:user:${userId}`, "max")
 
 		return NextResponse.json({ message: "Deleted" }, { status: 200 })
 	} catch (err) {

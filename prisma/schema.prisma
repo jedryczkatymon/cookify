@@ -30,6 +30,8 @@ model Recipe {
 
   @@index([name])
   @@index([description])
+  @@index([createdById])
+  @@index([createdById, createdAt])
 }
 
 model Tag {
