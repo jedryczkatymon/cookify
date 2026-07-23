@@ -35,16 +35,18 @@ export default function RootLayout({
   return (
     <html lang='en' className={`${geist.variable}`}>
       <body>
-        <ClerkProvider>
-          <Suspense fallback={null}>
-            <UploadThingSSR />
-          </Suspense>
-          <Navbar />
-          <NuqsAdapter>{children}</NuqsAdapter>
-          {/* <Footer /> */}
-          <Analytics />
-          <SpeedInsights />
-        </ClerkProvider>
+        <Suspense fallback={null}>
+          <ClerkProvider>
+            <Suspense fallback={null}>
+              <UploadThingSSR />
+            </Suspense>
+            <Navbar />
+            <NuqsAdapter>{children}</NuqsAdapter>
+            {/* <Footer /> */}
+            <Analytics />
+            <SpeedInsights />
+          </ClerkProvider>
+        </Suspense>
       </body>
     </html>
   );
