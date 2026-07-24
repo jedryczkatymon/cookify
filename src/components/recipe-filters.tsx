@@ -1,12 +1,13 @@
 "use client"
 
-import { Check, Filter } from "lucide-react"
+import { Check, Filter, Loader2 } from "lucide-react"
 import {
 	parseAsArrayOf,
 	parseAsInteger,
 	parseAsString,
 	useQueryState,
 } from "nuqs"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	Command,
@@ -33,15 +34,71 @@ import {
 import { MEALS } from "@/lib/enums"
 import { cn } from "@/lib/utils"
 
-interface RecipeFiltersProps {
-	availableTags: string[]
-	availableIngredients: string[]
+type FilterOptionType = "tags" | "ingredients"
+
+const FILTER_OPTIONS_LIMIT = "10"
+
+function useFilterOptions(type: FilterOptionType, enabled: boolean) {
+	const [items, setItems] = useState<string[]>([])
+	const [loading, setLoading] = useState(false)
+	const [search, setSearch] = useState("")
+	const requestId = useRef(0)
+
+	useEffect(() => {
+		if (!enabled) return
+
+		const controller = new AbortController()
+		const id = ++requestId.current
+		setLoading(true)
+		const delay = search.trim() ? 200 : 0
+		const timer = setTimeout(async () => {
+			try {
+				const params = new URLSearchParams({
+					type,
+					limit: FILTER_OPTIONS_LIMIT,
+				})
+				if (search.trim()) params.set("q", search.trim())
+
+				const res = await fetch(
+					`/api/recipes/filter-options?${params.toString()}`,
+					{ signal: controller.signal },
+				)
+				if (!res.ok) return
+				const data = (await res.json()) as { items: string[] }
+				if (id !== requestId.current) return
+				setItems(data.items ?? [])
+			} catch (err) {
+				if (err instanceof DOMException && err.name === "AbortError") return
+			} finally {
+				if (id === requestId.current) setLoading(false)
+			}
+		}, delay)
+
+		return () => {
+			clearTimeout(timer)
+			controller.abort()
+		}
+	}, [enabled, search, type])
+
+	useEffect(() => {
+		if (!enabled) {
+			setSearch("")
+			setItems([])
+			setLoading(false)
+		}
+	}, [enabled])
+
+	return {
+		items,
+		loading,
+		search,
+		setSearch,
+	}
 }
 
-export function RecipeFilters({
-	availableTags,
-	availableIngredients,
-}: RecipeFiltersProps) {
+export function RecipeFilters() {
+	const [open, setOpen] = useState(false)
+
 	const [, setPage] = useQueryState(
 		"page",
 		parseAsInteger.withDefault(1).withOptions({
@@ -79,6 +136,9 @@ export function RecipeFilters({
 			.withOptions({ shallow: false }),
 	)
 
+	const tagOptions = useFilterOptions("tags", open)
+	const ingredientOptions = useFilterOptions("ingredients", open)
+
 	const activeFilterCount =
 		(category ? 1 : 0) +
 		(maxPrepTime ? 1 : 0) +
@@ -113,7 +173,7 @@ export function RecipeFilters({
 	}
 
 	return (
-		<Popover>
+		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button variant="outline" className="gap-2 border-dashed">
 					<Filter className="h-4 w-4" />
@@ -200,37 +260,51 @@ export function RecipeFilters({
 						<div className="grid gap-2">
 							<Label>Tags</Label>
 							<div className="rounded-md border p-1">
-								<Command>
-									<CommandInput placeholder="Search tags..." className="h-9" />
+								<Command shouldFilter={false}>
+									<CommandInput
+										placeholder="Search tags..."
+										className="h-9"
+										value={tagOptions.search}
+										onValueChange={tagOptions.setSearch}
+									/>
 									<CommandList>
-										<CommandEmpty>No tag found.</CommandEmpty>
-										<CommandGroup className="max-h-40 overflow-y-auto">
-											{availableTags.map((t) => {
-												const isSelected = tags.includes(t)
-												return (
-													<CommandItem
-														key={t}
-														value={t}
-														onSelect={() => {
-															toggleTag(t)
-															setPage(1)
-														}}
-													>
-														<div
-															className={cn(
-																"mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-																isSelected
-																	? "bg-primary text-primary-foreground"
-																	: "opacity-50 [&_svg]:invisible",
-															)}
-														>
-															<Check className={cn("h-4 w-4")} />
-														</div>
-														{t}
-													</CommandItem>
-												)
-											})}
-										</CommandGroup>
+										{tagOptions.loading ? (
+											<div className="flex items-center justify-center gap-2 py-4 text-muted-foreground text-sm">
+												<Loader2 className="h-4 w-4 animate-spin" />
+												Loading…
+											</div>
+										) : (
+											<>
+												<CommandEmpty>No tag found.</CommandEmpty>
+												<CommandGroup className="max-h-40 overflow-y-auto">
+													{tagOptions.items.map((t) => {
+														const isSelected = tags.includes(t)
+														return (
+															<CommandItem
+																key={t}
+																value={t}
+																onSelect={() => {
+																	toggleTag(t)
+																	setPage(1)
+																}}
+															>
+																<div
+																	className={cn(
+																		"mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+																		isSelected
+																			? "bg-primary text-primary-foreground"
+																			: "opacity-50 [&_svg]:invisible",
+																	)}
+																>
+																	<Check className={cn("h-4 w-4")} />
+																</div>
+																{t}
+															</CommandItem>
+														)
+													})}
+												</CommandGroup>
+											</>
+										)}
 									</CommandList>
 								</Command>
 							</div>
@@ -239,40 +313,51 @@ export function RecipeFilters({
 						<div className="grid gap-2">
 							<Label>Ingredients</Label>
 							<div className="rounded-md border p-1">
-								<Command>
+								<Command shouldFilter={false}>
 									<CommandInput
 										placeholder="Search ingredients..."
 										className="h-9"
+										value={ingredientOptions.search}
+										onValueChange={ingredientOptions.setSearch}
 									/>
 									<CommandList>
-										<CommandEmpty>No ingredient found.</CommandEmpty>
-										<CommandGroup className="max-h-40 overflow-y-auto">
-											{availableIngredients.map((item) => {
-												const isSelected = ingredients.includes(item)
-												return (
-													<CommandItem
-														key={item}
-														value={item}
-														onSelect={() => {
-															toggleIngredient(item)
-															setPage(1)
-														}}
-													>
-														<div
-															className={cn(
-																"mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-																isSelected
-																	? "bg-primary text-primary-foreground"
-																	: "opacity-50 [&_svg]:invisible",
-															)}
-														>
-															<Check className={cn("h-4 w-4")} />
-														</div>
-														{item}
-													</CommandItem>
-												)
-											})}
-										</CommandGroup>
+										{ingredientOptions.loading ? (
+											<div className="flex items-center justify-center gap-2 py-4 text-muted-foreground text-sm">
+												<Loader2 className="h-4 w-4 animate-spin" />
+												Loading…
+											</div>
+										) : (
+											<>
+												<CommandEmpty>No ingredient found.</CommandEmpty>
+												<CommandGroup className="max-h-40 overflow-y-auto">
+													{ingredientOptions.items.map((item) => {
+														const isSelected = ingredients.includes(item)
+														return (
+															<CommandItem
+																key={item}
+																value={item}
+																onSelect={() => {
+																	toggleIngredient(item)
+																	setPage(1)
+																}}
+															>
+																<div
+																	className={cn(
+																		"mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+																		isSelected
+																			? "bg-primary text-primary-foreground"
+																			: "opacity-50 [&_svg]:invisible",
+																	)}
+																>
+																	<Check className={cn("h-4 w-4")} />
+																</div>
+																{item}
+															</CommandItem>
+														)
+													})}
+												</CommandGroup>
+											</>
+										)}
 									</CommandList>
 								</Command>
 							</div>

@@ -141,34 +141,48 @@ async function getUserRecipesCached(
 	return { recipes, total }
 }
 
-async function getUserTagsCached(clerkId: string) {
+async function getUserTagsCached(clerkId: string, q: string, limit: number) {
 	"use cache"
 	cacheLife("minutes")
 	cacheTag(`recipes:user:${clerkId}`)
 
 	const tags = await prisma.tag.findMany({
-		where: { recipe: { createdById: clerkId } },
+		where: {
+			recipe: { createdById: clerkId },
+			...(q ? { name: { contains: q, mode: "insensitive" as const } } : {}),
+		},
 		select: { name: true },
 		distinct: ["name"],
 		orderBy: { name: "asc" },
+		take: limit,
 	})
 
 	return tags.map((t: { name: string }) => t.name)
 }
 
-async function getUserIngredientsCached(clerkId: string) {
+async function getUserIngredientsCached(
+	clerkId: string,
+	q: string,
+	limit: number,
+) {
 	"use cache"
 	cacheLife("minutes")
 	cacheTag(`recipes:user:${clerkId}`)
 
 	const ingredients = await prisma.ingredient.findMany({
-		where: { recipe: { createdById: clerkId } },
+		where: {
+			recipe: { createdById: clerkId },
+			...(q ? { product: { contains: q, mode: "insensitive" as const } } : {}),
+		},
 		select: { product: true },
 		distinct: ["product"],
 		orderBy: { product: "asc" },
+		take: limit,
 	})
 
-	return ingredients.map((i: { product: string | null }) => i.product ?? "")
+	return ingredients
+		.map((i: { product: string | null }) => i.product ?? "")
+		.filter(Boolean)
 }
 
 export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
@@ -192,18 +206,29 @@ export async function getUserRecipes<K extends keyof Prisma.RecipeSelect>(
 	})
 }
 
-export async function getUserTags() {
-	const user = await getCurrentUser()
-	if (!user) return []
-
-	return getUserTagsCached(user.clerkId)
+type FilterOptionsParams = {
+	q?: string
+	limit?: number
 }
 
-export async function getUserIngredients() {
+export async function getUserTags({
+	q = "",
+	limit = 50,
+}: FilterOptionsParams = {}) {
 	const user = await getCurrentUser()
 	if (!user) return []
 
-	return getUserIngredientsCached(user.clerkId)
+	return getUserTagsCached(user.clerkId, q.trim(), Math.min(limit, 100))
+}
+
+export async function getUserIngredients({
+	q = "",
+	limit = 50,
+}: FilterOptionsParams = {}) {
+	const user = await getCurrentUser()
+	if (!user) return []
+
+	return getUserIngredientsCached(user.clerkId, q.trim(), Math.min(limit, 100))
 }
 
 /**
