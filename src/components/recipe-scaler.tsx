@@ -1,11 +1,13 @@
 "use client"
 
-import { type ChangeEvent, useState } from "react"
+import { type ChangeEvent, useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { H2 } from "@/components/ui/typography"
 import type { Ingredient } from "@/prisma"
 
 interface RecipeScalerProps {
+	recipeSlug: string
 	initialServings: number
 	ingredients: Ingredient[]
 	prepTime?: number | string | null
@@ -14,7 +16,12 @@ interface RecipeScalerProps {
 	tags?: { name: string }[]
 }
 
+function storageKey(recipeSlug: string) {
+	return `cookify:checked-ingredients:${recipeSlug}`
+}
+
 export default function RecipeScaler({
+	recipeSlug,
 	initialServings,
 	ingredients,
 	prepTime,
@@ -22,11 +29,56 @@ export default function RecipeScaler({
 	category,
 	tags,
 }: RecipeScalerProps) {
-	const [servings, setServings] = useState<number | "">(initialServings || 1)
+	const [servings, setServings] = useState<number | "">(1)
+	const [checked, setChecked] = useState<Set<number>>(() => new Set())
 	const base = initialServings && initialServings > 0 ? initialServings : 1
 
 	const currentServings = servings === "" ? 0 : servings
 	const ratio = currentServings / base
+
+	useEffect(() => {
+		try {
+			const raw = localStorage.getItem(storageKey(recipeSlug))
+			if (!raw) {
+				setChecked(new Set())
+				return
+			}
+			const ids = JSON.parse(raw) as unknown
+			if (
+				Array.isArray(ids) &&
+				ids.every((id): id is number => typeof id === "number")
+			) {
+				setChecked(new Set(ids))
+			} else {
+				setChecked(new Set())
+			}
+		} catch {
+			setChecked(new Set())
+		}
+	}, [recipeSlug])
+
+	const persistChecked = (next: Set<number>) => {
+		setChecked(next)
+		try {
+			localStorage.setItem(storageKey(recipeSlug), JSON.stringify([...next]))
+		} catch {
+			// ignore quota / private mode errors
+		}
+	}
+
+	const toggleIngredient = (id: number) => {
+		const next = new Set(checked)
+		if (next.has(id)) {
+			next.delete(id)
+		} else {
+			next.add(id)
+		}
+		persistChecked(next)
+	}
+
+	const clearChecked = () => {
+		persistChecked(new Set())
+	}
 
 	const handleServingsChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value
@@ -52,9 +104,27 @@ export default function RecipeScaler({
 
 	const scaledCalories = calories ? Math.round(Number(calories) * ratio) : null
 
+	const ingredientGroups = (() => {
+		const sorted = (ingredients ?? [])
+			.slice()
+			.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+		const groups: { section: string | null; items: Ingredient[] }[] = []
+		for (const ing of sorted) {
+			const section = ing.section?.trim() || null
+			const last = groups[groups.length - 1]
+			if (last && last.section === section) {
+				last.items.push(ing)
+			} else {
+				groups.push({ section, items: [ing] })
+			}
+		}
+		return groups
+	})()
+
 	return (
 		<>
-			<div className="mt-2 flex flex-wrap items-center gap-2 text-gray-500">
+			<div className="mt-6 flex flex-wrap items-center gap-2 text-gray-500">
 				{category && <span>{category} · </span>}
 
 				<div className="flex items-center gap-2">
@@ -75,25 +145,72 @@ export default function RecipeScaler({
 			</div>
 
 			{tags && tags.length > 0 && (
-				<p style={{ marginTop: 8 }}>
-					Tags: {tags.map((t) => t.name).join(", ")}
-				</p>
+				<div className="mt-6 flex flex-wrap items-center gap-2">
+					{tags.map((t) => (
+						<span
+							key={t.name}
+							className="rounded-full bg-neutral-500 px-3 py-1 font-medium text-white text-xs"
+						>
+							{t.name}
+						</span>
+					))}
+				</div>
 			)}
 
 			<section style={{ marginTop: 24 }}>
-				<H2>Ingredients</H2>
-				<ul className="mt-4 list-inside list-disc">
-					{ingredients?.length
-						? ingredients.map((ing) => (
-								<li key={ing.id} className="mb-2">
-									<span className="font-semibold">
-										{formatAmount(Number(ing.amount))}
-									</span>{" "}
-									{ing.unit} {ing.product}
-								</li>
-							))
-						: null}
-				</ul>
+				<div className="flex items-center justify-between gap-4">
+					<H2>Ingredients</H2>
+					{checked.size > 0 ? (
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							onClick={clearChecked}
+						>
+							Clear
+						</Button>
+					) : null}
+				</div>
+				{ingredientGroups.length > 0 ? (
+					<div className="mt-4 space-y-4">
+						{ingredientGroups.map((group, groupIndex) => (
+							<div key={`${group.section ?? "ungrouped"}-${groupIndex}`}>
+								{group.section ? (
+									<h3 className="mb-2 border-b pb-1 font-semibold">
+										{group.section}
+									</h3>
+								) : null}
+								<ul className="list-none space-y-0">
+									{group.items.map((ing) => {
+										const isChecked = checked.has(ing.id)
+										return (
+											<li key={ing.id}>
+												<label className="mb-2 flex cursor-pointer items-start gap-2">
+													<input
+														type="checkbox"
+														checked={isChecked}
+														onChange={() => toggleIngredient(ing.id)}
+														className="mt-1"
+													/>
+													<span
+														className={
+															isChecked ? "line-through opacity-60" : undefined
+														}
+													>
+														<span className="font-semibold">
+															{formatAmount(Number(ing.amount))}
+														</span>{" "}
+														{ing.unit} {ing.product}
+													</span>
+												</label>
+											</li>
+										)
+									})}
+								</ul>
+							</div>
+						))}
+					</div>
+				) : null}
 			</section>
 		</>
 	)

@@ -1,8 +1,9 @@
 import { auth } from "@clerk/nextjs/server"
 import { revalidateTag } from "next/cache"
-import { NextResponse } from "next/server"
+import { after, NextResponse } from "next/server"
 import { UTApi } from "uploadthing/server"
 import { prisma } from "@/lib/prisma"
+import { normalizeStepsInput } from "@/lib/split-steps"
 import type { Ingredient, Tag } from "@/prisma"
 
 export async function PUT(
@@ -55,11 +56,12 @@ export async function PUT(
 						data: { recipeId: null },
 					})
 
-					try {
-						await utapi.deleteFiles(currentUpload.key)
-					} catch (uploadError) {
-						console.error("UploadThing deletion error:", uploadError)
-					}
+					const keyToDelete = currentUpload.key
+					after(() => {
+						utapi.deleteFiles(keyToDelete).catch((uploadError) => {
+							console.error("UploadThing deletion error:", uploadError)
+						})
+					})
 				}
 
 				await prisma.upload.update({
@@ -69,34 +71,42 @@ export async function PUT(
 			}
 		}
 
-		const stepsArr: string[] = (values.steps ?? "")
-			.toString()
-			.split(/\n\s*\n/)
-			.map((s: string) => s.trim())
-			.filter(Boolean)
+		const stepsArr = normalizeStepsInput(values.steps)
+		const ingredientsInput = Array.isArray(values.ingredients)
+			? (values.ingredients as Ingredient[])
+			: []
 
-		await prisma.step.deleteMany({ where: { recipeId: existing.id } })
-		if (stepsArr.length > 0) {
-			const stepsData = stepsArr.map((content, idx) => ({
-				order: idx + 1,
-				content,
-				recipeId: existing.id,
-			}))
-			await prisma.step.createMany({ data: stepsData })
-		}
-
-		await prisma.ingredient.deleteMany({ where: { recipeId: existing.id } })
-		if (Array.isArray(values.ingredients) && values.ingredients.length > 0) {
-			const ingredientsData = (values.ingredients as Ingredient[]).map(
-				(ing) => ({
-					product: ing.product ?? "",
-					amount: ing.amount ?? null,
-					unit: ing.unit ?? null,
-					recipeId: existing.id,
-				}),
-			)
-			await prisma.ingredient.createMany({ data: ingredientsData })
-		}
+		await Promise.all([
+			(async () => {
+				await prisma.step.deleteMany({ where: { recipeId: existing.id } })
+				if (stepsArr.length > 0) {
+					await prisma.step.createMany({
+						data: stepsArr.map((content, idx) => ({
+							order: idx + 1,
+							content,
+							recipeId: existing.id,
+						})),
+					})
+				}
+			})(),
+			(async () => {
+				await prisma.ingredient.deleteMany({
+					where: { recipeId: existing.id },
+				})
+				if (ingredientsInput.length > 0) {
+					await prisma.ingredient.createMany({
+						data: ingredientsInput.map((ing, idx) => ({
+							product: ing.product ?? "",
+							amount: ing.amount ?? null,
+							unit: ing.unit ?? null,
+							section: ing.section || null,
+							order: idx + 1,
+							recipeId: existing.id,
+						})),
+					})
+				}
+			})(),
+		])
 
 		const newTags = Array.isArray(values.tags) ? (values.tags as string[]) : []
 		const currentTagNames = (existing.tags ?? [])
@@ -141,16 +151,11 @@ export async function PUT(
 
 		await Promise.all([...addPromises, ...removePromises])
 
-		const updated = await prisma.recipe.findUnique({
-			where: { id: existing.id },
-			include: { ingredients: true, tags: true, steps: true },
-		})
-
 		if (userId) {
 			revalidateTag(`recipes:user:${userId}`, "max")
 		}
 
-		return NextResponse.json({ recipe: updated }, { status: 200 })
+		return NextResponse.json({ ok: true }, { status: 200 })
 	} catch (err) {
 		console.error(err)
 		return NextResponse.json({ error: "Server error" }, { status: 500 })

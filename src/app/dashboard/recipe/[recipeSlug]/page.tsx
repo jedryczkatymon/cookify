@@ -14,9 +14,51 @@ type PageProps = {
 
 export default function RecipePage({ params }: PageProps) {
 	return (
-		<Suspense fallback={null}>
+		<Suspense fallback={<RecipeFallback />}>
 			<RecipeContent params={params} />
 		</Suspense>
+	)
+}
+
+function RecipeFallback() {
+	return (
+		<div className="mx-auto max-w-3xl py-10" aria-hidden>
+			<div className="h-9 w-2/3 animate-pulse rounded-md bg-muted" />
+			<div className="mt-6 aspect-video w-full animate-pulse rounded-lg bg-muted" />
+			<div className="mt-6 space-y-2">
+				<div className="h-4 w-full animate-pulse rounded bg-muted" />
+				<div className="h-4 w-5/6 animate-pulse rounded bg-muted" />
+				<div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+			</div>
+
+			<div className="mt-8 space-y-4">
+				<div className="flex flex-wrap gap-2">
+					<div className="h-8 w-20 animate-pulse rounded-full bg-muted" />
+					<div className="h-8 w-24 animate-pulse rounded-full bg-muted" />
+					<div className="h-8 w-16 animate-pulse rounded-full bg-muted" />
+				</div>
+				<div className="space-y-3">
+					{["ing-1", "ing-2", "ing-3", "ing-4", "ing-5", "ing-6"].map((id) => (
+						<div key={id} className="flex items-center gap-3">
+							<div className="size-4 shrink-0 animate-pulse rounded bg-muted" />
+							<div className="h-4 flex-1 animate-pulse rounded bg-muted" />
+						</div>
+					))}
+				</div>
+			</div>
+
+			<div className="mt-6 space-y-3">
+				<div className="h-7 w-24 animate-pulse rounded bg-muted" />
+				{["step-1", "step-2", "step-3", "step-4"].map((id) => (
+					<div key={id} className="h-4 w-full animate-pulse rounded bg-muted" />
+				))}
+			</div>
+
+			<div className="mt-10 flex gap-5">
+				<div className="h-10 w-24 animate-pulse rounded-md bg-muted" />
+				<div className="h-10 w-24 animate-pulse rounded-md bg-muted" />
+			</div>
+		</div>
 	)
 }
 
@@ -50,10 +92,11 @@ async function RecipeContent({ params }: PageProps) {
 				)}
 
 				{recipe.description ? (
-					<p className="mt-4">{recipe.description}</p>
+					<p className="mt-6">{recipe.description}</p>
 				) : null}
 
 				<RecipeScaler
+					recipeSlug={recipeSlug}
 					initialServings={recipe.servings ?? 1}
 					ingredients={recipe.ingredients ?? []}
 					prepTime={recipe.prepTime}
@@ -84,7 +127,7 @@ async function RecipeContent({ params }: PageProps) {
 				</section>
 			) : null}
 
-			<div className="mt-10">
+			<div className="mt-10 flex gap-5">
 				<DialogDelete slug={recipeSlug} />
 				<EditButton slug={recipeSlug} />
 			</div>

@@ -24,6 +24,9 @@
 		"@ai-sdk/react": "^3.0.88",
 		"@auth/prisma-adapter": "^2.11.3",
 		"@clerk/nextjs": "^6.39.6",
+		"@dnd-kit/core": "^6.3.1",
+		"@dnd-kit/sortable": "^10.0.0",
+		"@dnd-kit/utilities": "^3.2.2",
 		"@hookform/resolvers": "^5.4.0",
 		"@mendable/firecrawl-js": "^4.13.0",
 		"@prisma/adapter-pg": "^7.9.0",
@@ -63,6 +66,7 @@
 		"svix": "^1.98.0",
 		"tailwind-merge": "^3.6.0",
 		"tsx": "^4.21.0",
+		"undici": "~6.21.3",
 		"uploadthing": "^7.7.4",
 		"vaul": "^1.1.2",
 		"zod": "^4.4.3"

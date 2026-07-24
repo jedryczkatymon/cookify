@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { normalizeStepsInput, splitStepsText } from "@/lib/split-steps"
 
 // Helper: Safely parse a number from various formats
 // Handles: 20, "20", "20 mins", "about 20", "", null, undefined
@@ -17,29 +18,89 @@ const safeParseNumber = (val: unknown): number | undefined => {
 	return undefined
 }
 
-// Helper: Parse ingredient strings
-function parseIngredientString(str: string) {
-	// Regex: Start with Number + (Optional Unit) + Product
-	// e.g. "1 kg potatoes", "2 eggs", "salt"
-	const match = str.match(
-		/^([\d.,]+)\s*([a-zA-Ząćęłńóśźż]{1,10}\.?)?\s*([\s\S]*)$/,
-	)
+const UNIT_ONLY =
+	/^(.*?)\s+(szczypta|szczypty|łyżeczki|łyżeczka|łyżki|łyżka|ząbki|ząbek|szt\.?|opak\.?|dag|kg|g|ml|l)$/iu
 
-	if (match?.[1]) {
-		return {
-			amount: safeParseNumber(match[1]),
-			unit: match[2]?.trim() || undefined,
-			product: match[3] || match[2] || str,
+// Helper: Parse ingredient strings (amount-first OR product-first Polish style)
+function parseIngredientString(str: string) {
+	const trimmed = str.trim()
+	if (!trimmed) {
+		return { amount: undefined, unit: undefined, product: str }
+	}
+
+	// Amount-first: "1 kg potatoes", "2 eggs", "600 g spinach"
+	if (/^[\d.,]/.test(trimmed)) {
+		const withUnit = trimmed.match(
+			/^([\d.,]+)\s*([a-zA-Ząćęłńóśźż]{1,15}\.?)\s+(.+)$/u,
+		)
+		if (withUnit?.[1] && withUnit[3]) {
+			return {
+				amount: safeParseNumber(withUnit[1]),
+				unit: withUnit[2]?.trim() || undefined,
+				product: withUnit[3].trim(),
+			}
+		}
+		const amountOnly = trimmed.match(/^([\d.,]+)\s+(.+)$/u)
+		if (amountOnly?.[1] && amountOnly[2]) {
+			return {
+				amount: safeParseNumber(amountOnly[1]),
+				unit: undefined,
+				product: amountOnly[2].trim(),
+			}
 		}
 	}
 
-	// Fallback: The whole string is the product
+	// Product-first with amount+unit: "szpinak 600 g", "masło 1 łyżka", "jaja 2 szt."
+	const productFirst = trimmed.match(
+		/^(.+?)\s+([\d.,]+)\s*([a-zA-Ząćęłńóśźż]{1,15}\.?)$/u,
+	)
+	if (productFirst?.[1] && productFirst[2]) {
+		return {
+			amount: safeParseNumber(productFirst[2]),
+			unit: productFirst[3]?.trim() || undefined,
+			product: productFirst[1].trim(),
+		}
+	}
+
+	// Product + unit without numeric amount: "sól szczypta"
+	const unitOnly = trimmed.match(UNIT_ONLY)
+	if (unitOnly?.[1] && unitOnly[2]) {
+		return {
+			amount: undefined,
+			unit: unitOnly[2].trim(),
+			product: unitOnly[1].trim(),
+		}
+	}
+
 	return {
 		amount: undefined,
 		unit: undefined,
-		product: str,
+		product: trimmed,
 	}
 }
+
+/** Flat schema for LLM structured output — keep simple for speed/reliability. */
+export const recipeLlmSchema = z.object({
+	name: z.string(),
+	description: z.string().optional(),
+	prepTime: z.number().nullish(),
+	cookTime: z.number().nullish(),
+	calories: z.number().nullish(),
+	servings: z.number().nullish(),
+	notes: z.string().nullish(),
+	ingredients: z
+		.array(
+			z.object({
+				product: z.string(),
+				amount: z.number().nullish(),
+				unit: z.string().nullish(),
+				section: z.string().nullish(),
+			}),
+		)
+		.default([]),
+	steps: z.array(z.string()).default([]),
+	tags: z.array(z.object({ name: z.string() })).optional(),
+})
 
 // 1. BASE SCHEMA: Strict structure for the frontend form
 export const baseRecipeSchema = z.object({
@@ -66,6 +127,7 @@ export const baseRecipeSchema = z.object({
 				product: z.string(),
 				amount: z.coerce.number().nullish(), // Coerce nested numbers too
 				unit: z.string().nullish(),
+				section: z.string().nullish(),
 			}),
 		)
 		.default([]),
@@ -89,11 +151,13 @@ export const baseRecipeSchema = z.object({
 		])
 		.nullish()
 		.transform((val) => {
-			if (!val) return ""
+			if (!val) return [] as string[]
 
 			if (Array.isArray(val)) {
 				if (val.length > 0 && typeof val[0] === "string") {
-					return (val as string[]).join("\n\n")
+					return (val as string[])
+						.flatMap((s) => splitStepsText(s))
+						.filter(Boolean)
 				}
 				return val
 					.map(
@@ -103,11 +167,11 @@ export const baseRecipeSchema = z.object({
 							name?: string | null
 						}) => v.text || v.description || v.name || "",
 					)
-					.filter((t) => t.trim().length > 0)
-					.join("\n\n")
+					.flatMap((t) => splitStepsText(t))
+					.filter(Boolean)
 			}
 
-			return String(val)
+			return normalizeStepsInput(String(val))
 		}),
 })
 
@@ -155,19 +219,39 @@ export const recipeSchema = z.preprocess((val) => {
 			}
 			if (typeof ing === "object" && ing !== null) {
 				const ingObj = ing as Record<string, unknown>
+				const sectionRaw = ingObj.section ?? ingObj.group
+				const fromSectionField =
+					typeof sectionRaw === "string" && sectionRaw.trim()
+						? sectionRaw.trim()
+						: undefined
+				const hasProduct =
+					typeof ingObj.product === "string" && ingObj.product.trim().length > 0
+				const nameAsSection =
+					hasProduct &&
+					typeof ingObj.name === "string" &&
+					ingObj.name.trim().length > 0
+						? ingObj.name.trim()
+						: undefined
+				const product = hasProduct
+					? String(ingObj.product).trim()
+					: typeof ingObj.name === "string" &&
+							ingObj.name.trim() &&
+							!fromSectionField
+						? ingObj.name.trim()
+						: "Unknown Ingredient"
 				return {
 					amount: safeParseNumber(ingObj.amount),
 					unit:
 						typeof ingObj.unit === "string" ? ingObj.unit.trim() : undefined,
-					product: String(
-						ingObj.product || ingObj.name || "Unknown Ingredient",
-					).trim(),
+					product,
+					section: fromSectionField ?? nameAsSection,
 				}
 			}
 			return {
 				product: "Unknown Ingredient",
 				amount: undefined,
 				unit: undefined,
+				section: undefined,
 			}
 		})
 	}
