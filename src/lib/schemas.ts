@@ -258,3 +258,27 @@ export const recipeSchema = z.preprocess((val) => {
 
 	return normalized
 }, baseRecipeSchema)
+
+const isoDateString = z
+	.string()
+	.regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD")
+
+export const mealPlanCreateSchema = z.object({
+	date: isoDateString,
+	recipeId: z.coerce.number().int().positive(),
+	servings: z.coerce.number().int().positive().nullish(),
+})
+
+export const mealPlanDeleteSchema = z.object({
+	id: z.coerce.number().int().positive(),
+})
+
+export const mealPlanCopyWeekSchema = z.object({
+	fromStart: isoDateString,
+	toStart: isoDateString,
+})
+
+export const mealPlanRangeSchema = z.object({
+	from: isoDateString,
+	to: isoDateString,
+})

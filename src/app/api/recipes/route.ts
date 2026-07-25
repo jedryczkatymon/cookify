@@ -25,7 +25,16 @@ export async function GET(req: Request) {
 		const ingredients = searchParams.getAll("ingredients")
 
 		const result = await getUserRecipes(
-			["id", "slug", "name", "uploads", "prepTime", "calories", "servings"],
+			[
+				"id",
+				"slug",
+				"name",
+				"uploads",
+				"prepTime",
+				"calories",
+				"servings",
+				"category",
+			],
 			{
 				search: q,
 				page: Number.isFinite(page) ? page : 1,

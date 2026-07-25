@@ -24,8 +24,20 @@ if (process.env.NODE_ENV !== "production") {
 	globalForPrisma.pgPool = pool
 }
 
+/** Invalidate the dev singleton when models or fields change after `prisma generate`. */
 function currentSchemaMarker() {
-	return Object.keys(Prisma.IngredientScalarFieldEnum).sort().join(",")
+	return Object.values(Prisma.ModelName)
+		.sort()
+		.flatMap((model) => {
+			const fieldEnum = (Prisma as Record<string, unknown>)[
+				`${model}ScalarFieldEnum`
+			]
+			if (!fieldEnum || typeof fieldEnum !== "object") return [model]
+			return Object.keys(fieldEnum as object)
+				.sort()
+				.map((field) => `${model}.${field}`)
+		})
+		.join(",")
 }
 
 function createPrismaClient() {

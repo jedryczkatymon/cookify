@@ -23,10 +23,11 @@ model Recipe {
   notes       String?
   createdById String
   createdBy   User         @relation(fields: [createdById], references: [clerkId], onDelete: Cascade)
-  steps       Step[]
-  ingredients Ingredient[]
-  tags        Tag[]
-  uploads     Upload?
+  steps           Step[]
+  ingredients     Ingredient[]
+  tags            Tag[]
+  uploads         Upload?
+  mealPlanEntries MealPlanEntry[]
 
   @@index([name])
   @@index([description])
@@ -92,4 +93,20 @@ model User {
   username        String?   @unique
   recipes         Recipe[]
   uploads         Upload[]
+  mealPlanEntries MealPlanEntry[]
+}
+
+model MealPlanEntry {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @db.Date
+  order     Int      @default(0)
+  servings  Int?
+  recipeId  Int
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
 }
