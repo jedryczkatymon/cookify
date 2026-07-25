@@ -2,10 +2,7 @@
 
 import { MealAddTile, MealSlot } from "@/components/meal-plan/meal-slot"
 import type { MealPlanEntryView } from "@/components/meal-plan/types"
-import {
-	formatDayColumnHeading,
-	formatDayHeading,
-} from "@/lib/meal-plan-week"
+import { formatDayColumnHeading, formatDayHeading } from "@/lib/meal-plan-week"
 
 export function DaySection({
 	date,
