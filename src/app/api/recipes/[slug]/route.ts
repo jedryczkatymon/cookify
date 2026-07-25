@@ -153,6 +153,7 @@ export async function PUT(
 
 		if (userId) {
 			revalidateTag(`recipes:user:${userId}`, "max")
+			revalidateTag(`meals:user:${userId}`, { expire: 0 })
 		}
 
 		return NextResponse.json({ ok: true }, { status: 200 })
@@ -199,6 +200,7 @@ export async function DELETE(
 
 		if (userId) {
 			revalidateTag(`recipes:user:${userId}`, "max")
+			revalidateTag(`meals:user:${userId}`, { expire: 0 })
 		}
 
 		return NextResponse.json({ message: "Deleted" }, { status: 200 })
