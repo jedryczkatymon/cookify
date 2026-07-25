@@ -1,6 +1,6 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useRef, useState } from "react"
 import RecipeCard from "@/components/recipe-card"
 
@@ -27,6 +27,7 @@ export default function RecipeGrid({
 	perPage,
 	initialTotal,
 }: RecipeGridProps) {
+	const router = useRouter()
 	const searchParams = useSearchParams()
 	const [recipes, setRecipes] = useState(initialRecipes)
 	const recipesRef = useRef(recipes)
@@ -44,6 +45,10 @@ export default function RecipeGrid({
 
 	const fillGap = async () => {
 		const remaining = recipesRef.current
+		if (remaining.length === 0 && totalRef.current === 0) {
+			router.refresh()
+			return
+		}
 		if (remaining.length >= perPage) return
 
 		const skip = (page - 1) * perPage + remaining.length
@@ -70,7 +75,7 @@ export default function RecipeGrid({
 	}
 
 	return (
-		<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+		<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 			{recipes.map((recipe) => (
 				<RecipeCard
 					key={recipe.id}

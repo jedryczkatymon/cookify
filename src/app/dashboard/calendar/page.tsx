@@ -9,7 +9,7 @@ import {
 
 export default function CalendarPage() {
 	return (
-		<div className="mx-auto w-4/5 space-y-6">
+		<div className="mx-auto mb-10 w-4/5 space-y-6 pb-6">
 			<h1 className="font-bold text-2xl tracking-tight">Calendar</h1>
 			<Empty className="border">
 				<EmptyHeader>

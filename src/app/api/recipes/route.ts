@@ -122,7 +122,8 @@ export async function POST(req: Request) {
 		}
 
 		if (userId) {
-			revalidateTag(`recipes:user:${userId}`, "max")
+			revalidateTag(`recipes:user:${userId}`, { expire: 0 })
+			revalidateTag(`meals:user:${userId}`, { expire: 0 })
 		}
 
 		return NextResponse.json({ recipe }, { status: 200 })

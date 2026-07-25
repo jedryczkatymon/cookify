@@ -22,7 +22,7 @@ export default function RecipePage({ params }: PageProps) {
 
 function RecipeFallback() {
 	return (
-		<div className="mx-auto max-w-3xl py-10" aria-hidden>
+		<div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10" aria-hidden>
 			<div className="h-9 w-2/3 animate-pulse rounded-md bg-muted" />
 			<div className="mt-6 aspect-video w-full animate-pulse rounded-lg bg-muted" />
 			<div className="mt-6 space-y-2">
@@ -74,9 +74,9 @@ async function RecipeContent({ params }: PageProps) {
 	const heroImage = recipe.uploads?.url
 
 	return (
-		<div className="mx-auto max-w-3xl py-10">
+		<div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
 			<header>
-				<H1>{recipe.name}</H1>
+				<H1 className="text-left sm:text-center">{recipe.name}</H1>
 
 				{heroImage && (
 					<div className="relative mt-6 aspect-video w-full overflow-hidden rounded-lg bg-gray-100">
@@ -92,7 +92,9 @@ async function RecipeContent({ params }: PageProps) {
 				)}
 
 				{recipe.description ? (
-					<p className="mt-6">{recipe.description}</p>
+					<p className="mt-4 text-sm sm:mt-6 sm:text-base">
+						{recipe.description}
+					</p>
 				) : null}
 
 				<RecipeScaler
@@ -108,12 +110,12 @@ async function RecipeContent({ params }: PageProps) {
 
 			<section className="mt-6">
 				<H2>Steps</H2>
-				<ol className="mt-4 list-inside list-decimal">
+				<ol className="mt-4 list-outside list-decimal space-y-3 pl-5 text-sm leading-relaxed sm:text-base">
 					{(recipe.steps ?? [])
 						.slice()
 						.sort((a: Step, b: Step) => (a.order ?? 0) - (b.order ?? 0))
 						.map((s: Step) => (
-							<li key={s.id} className="mb-3 whitespace-pre-wrap">
+							<li key={s.id} className="whitespace-pre-wrap break-words">
 								{s.content}
 							</li>
 						))}
@@ -123,13 +125,13 @@ async function RecipeContent({ params }: PageProps) {
 			{recipe.notes ? (
 				<section className="mt-6">
 					<H2>Notes</H2>
-					<p className="mt-2">{recipe.notes}</p>
+					<p className="mt-2 text-sm sm:text-base">{recipe.notes}</p>
 				</section>
 			) : null}
 
-			<div className="mt-10 flex gap-5">
-				<DialogDelete slug={recipeSlug} />
-				<EditButton slug={recipeSlug} />
+			<div className="mt-8 mb-4 grid grid-cols-2 gap-3 sm:mt-10 sm:flex sm:justify-end">
+				<DialogDelete slug={recipeSlug} variant="button" />
+				<EditButton slug={recipeSlug} variant="button" />
 			</div>
 		</div>
 	)

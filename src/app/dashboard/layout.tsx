@@ -4,7 +4,7 @@ export default function DashboardLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<div className="pb-20 md:pb-0">
+		<div className="pt-8 pb-20 md:pb-0">
 			{children}
 			<BottomTabs />
 		</div>

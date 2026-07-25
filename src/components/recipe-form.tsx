@@ -294,93 +294,97 @@ function SortableIngredientRow({
 		<div
 			ref={setNodeRef}
 			style={style}
-			className="grid grid-cols-13 items-center gap-4"
+			className="grid grid-cols-1 gap-2 border-b pb-2 sm:grid-cols-13 sm:items-center sm:gap-4 sm:border-0 sm:pb-0"
 		>
-			<div className="col-span-1 flex items-center justify-center">
-				<button
-					type="button"
-					className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-					aria-label={`Drag to reorder ingredient ${index + 1}`}
-					{...attributes}
-					{...listeners}
-				>
-					<GripVertical className="h-5 w-5" />
-				</button>
+			<div className="grid grid-cols-2 gap-2 sm:contents">
+				<div className="sm:order-2 sm:col-span-3">
+					<FormField
+						control={control}
+						name={`ingredients.${index}.amount` as const}
+						render={({ field }) => (
+							<FormItem>
+								<FormControl>
+									<Input
+										placeholder="e.g 50"
+										type="number"
+										aria-label="Amount"
+										{...field}
+										value={field.value ?? ""}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<div className="sm:order-3 sm:col-span-3">
+					<FormField
+						control={control}
+						name={`ingredients.${index}.unit` as const}
+						render={({ field }) => (
+							<FormItem>
+								<FormControl>
+									<Input
+										placeholder="e.g grams"
+										type="text"
+										aria-label="Unit"
+										{...field}
+										value={typeof field.value === "string" ? field.value : ""}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
 			</div>
 
-			<div className="col-span-3">
-				<FormField
-					control={control}
-					name={`ingredients.${index}.amount` as const}
-					render={({ field }) => (
-						<FormItem>
-							<FormControl>
-								<Input
-									placeholder="e.g 50"
-									type="number"
-									aria-label="Amount"
-									{...field}
-									value={field.value ?? ""}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-			</div>
+			<div className="flex items-center gap-2 sm:contents">
+				<div className="flex shrink-0 items-center justify-center sm:order-1 sm:col-span-1">
+					<button
+						type="button"
+						className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+						aria-label={`Drag to reorder ingredient ${index + 1}`}
+						{...attributes}
+						{...listeners}
+					>
+						<GripVertical className="h-5 w-5" />
+					</button>
+				</div>
 
-			<div className="col-span-3">
-				<FormField
-					control={control}
-					name={`ingredients.${index}.unit` as const}
-					render={({ field }) => (
-						<FormItem>
-							<FormControl>
-								<Input
-									placeholder="e.g grams"
-									type="text"
-									aria-label="Unit"
-									{...field}
-									value={typeof field.value === "string" ? field.value : ""}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-			</div>
+				<div className="min-w-0 flex-1 sm:order-4 sm:col-span-5">
+					<FormField
+						control={control}
+						name={`ingredients.${index}.product` as const}
+						render={({ field }) => (
+							<FormItem>
+								<FormControl>
+									<Input
+										placeholder="e.g butter"
+										type="text"
+										aria-label="Product"
+										{...field}
+										value={typeof field.value === "string" ? field.value : ""}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
 
-			<div className="col-span-5">
-				<FormField
-					control={control}
-					name={`ingredients.${index}.product` as const}
-					render={({ field }) => (
-						<FormItem>
-							<FormControl>
-								<Input
-									placeholder="e.g butter"
-									type="text"
-									aria-label="Product"
-									{...field}
-									value={typeof field.value === "string" ? field.value : ""}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-			</div>
-
-			<div className="col-span-1 flex justify-end">
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon"
-					onClick={onRemove}
-					aria-label={`Remove ingredient ${index + 1}`}
-				>
-					<Minus className="h-4 w-4" />
-				</Button>
+				<div className="flex shrink-0 justify-end sm:order-5 sm:col-span-1">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon"
+						onClick={onRemove}
+						aria-label={`Remove ingredient ${index + 1}`}
+					>
+						<Minus className="h-4 w-4" />
+					</Button>
+				</div>
 			</div>
 		</div>
 	)
@@ -588,9 +592,11 @@ export default function RecipeForm({
 		<Form {...form}>
 			<form
 				onSubmit={form.handleSubmit(internalSubmit)}
-				className="mx-auto max-w-3xl space-y-8 py-10"
+				className="mx-auto max-w-3xl space-y-8 px-4 py-6 sm:px-6 sm:py-10"
 			>
-				<H1>{recipe ? "Edit recipe" : "Create a recipe"}</H1>
+				<H1 className="text-left sm:text-center">
+					{recipe ? "Edit recipe" : "Create a recipe"}
+				</H1>
 				<div className="space-y-2">
 					<H2>Recipe Photo</H2>
 					<FormItem>
@@ -757,8 +763,8 @@ export default function RecipeForm({
 						</FormItem>
 					)}
 				/>
-				<div className="grid grid-cols-18 gap-4">
-					<div className="col-span-6">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<div>
 						<FormField
 							control={form.control}
 							name="servings"
@@ -779,7 +785,7 @@ export default function RecipeForm({
 						/>
 					</div>
 
-					<div className="col-span-6">
+					<div>
 						<FormField
 							control={form.control}
 							name="prepTime"
@@ -800,7 +806,7 @@ export default function RecipeForm({
 						/>
 					</div>
 
-					<div className="col-span-6">
+					<div>
 						<FormField
 							control={form.control}
 							name="calories"
@@ -824,7 +830,7 @@ export default function RecipeForm({
 				<H2>Ingredients</H2>
 				<div className="space-y-4">
 					{fields.some((f) => f.kind === "ingredient") ? (
-						<div className="grid grid-cols-13 gap-4">
+						<div className="hidden grid-cols-13 gap-4 sm:grid">
 							<div className="col-span-1" />
 							<div className="col-span-3 font-medium text-sm leading-none">
 								Amount
@@ -872,6 +878,7 @@ export default function RecipeForm({
 					<div className="flex flex-wrap gap-2">
 						<Button
 							type="button"
+							className="w-full sm:w-auto"
 							onClick={() =>
 								append({
 									kind: "ingredient",
@@ -887,6 +894,7 @@ export default function RecipeForm({
 						<Button
 							type="button"
 							variant="outline"
+							className="w-full sm:w-auto"
 							onClick={() => append({ kind: "section", title: "" })}
 						>
 							<Plus className="mr-2 h-4 w-4" />
@@ -935,9 +943,16 @@ export default function RecipeForm({
 						</Button>
 					</div>
 				</div>
-				<div className="flex items-center gap-3">
-					<Button type="submit">{submitLabel}</Button>
-					{recipe ? <DialogDelete slug={recipe?.slug ?? ""} /> : null}
+				<div className="mt-2 mb-4 grid grid-cols-2 gap-3 sm:flex sm:justify-end">
+					{recipe ? (
+						<DialogDelete slug={recipe?.slug ?? ""} variant="button" />
+					) : null}
+					<Button
+						type="submit"
+						className={cn("w-full sm:w-auto", !recipe && "col-span-2")}
+					>
+						{submitLabel}
+					</Button>
 				</div>
 			</form>
 		</Form>

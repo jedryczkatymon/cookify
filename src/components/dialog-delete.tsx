@@ -13,15 +13,18 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
 
 export default function DialogDelete({
 	slug,
 	onDeleted,
 	onAfterDelete,
+	variant = "icon",
 }: {
 	slug: string
 	onDeleted?: () => void
 	onAfterDelete?: () => void | Promise<void>
+	variant?: "icon" | "button"
 }) {
 	const router = useRouter()
 	const handleDelete = async () => {
@@ -41,9 +44,18 @@ export default function DialogDelete({
 	}
 	return (
 		<AlertDialog>
-			<AlertDialogTrigger className="inline-flex cursor-pointer items-center justify-center">
-				<Trash2 className="size-5" />
-			</AlertDialogTrigger>
+			{variant === "button" ? (
+				<AlertDialogTrigger asChild>
+					<Button type="button" variant="outline" className="w-full sm:w-auto">
+						<Trash2 className="size-4" />
+						Delete
+					</Button>
+				</AlertDialogTrigger>
+			) : (
+				<AlertDialogTrigger className="inline-flex cursor-pointer items-center justify-center">
+					<Trash2 className="size-5" />
+				</AlertDialogTrigger>
+			)}
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

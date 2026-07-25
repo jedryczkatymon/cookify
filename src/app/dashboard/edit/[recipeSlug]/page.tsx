@@ -17,7 +17,10 @@ export default function EditPage({ params }: PageProps) {
 
 function EditFallback() {
 	return (
-		<div className="mx-auto max-w-3xl space-y-8 py-10" aria-hidden>
+		<div
+			className="mx-auto max-w-3xl space-y-8 px-4 py-6 sm:px-6 sm:py-10"
+			aria-hidden
+		>
 			<div className="h-9 w-48 animate-pulse rounded-md bg-muted" />
 
 			<div className="space-y-2">

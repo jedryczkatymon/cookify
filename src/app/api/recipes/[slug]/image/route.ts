@@ -43,7 +43,8 @@ export async function DELETE(
 			where: { id: recipe.id },
 		})
 
-		revalidateTag(`recipes:user:${userId}`, "max")
+		revalidateTag(`recipes:user:${userId}`, { expire: 0 })
+		revalidateTag(`meals:user:${userId}`, { expire: 0 })
 
 		return NextResponse.json({ message: "Deleted" }, { status: 200 })
 	} catch (err) {

@@ -45,13 +45,16 @@ function DashboardFallback() {
 		<div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-4/5 flex-col gap-6">
 			<h1 className="font-bold text-2xl tracking-tight">Recipes</h1>
 			<div className="flex flex-1 flex-col justify-start gap-4 pt-[min(12vh,6rem)]">
-				<div className="flex h-9 items-center justify-end gap-2" aria-hidden>
-					<div className="h-9 w-56 animate-pulse rounded-md bg-muted" />
+				<div
+					className="flex flex-wrap items-center justify-end gap-2"
+					aria-hidden
+				>
+					<div className="h-9 w-full basis-full animate-pulse rounded-md bg-muted sm:w-56 sm:basis-auto" />
 					<div className="size-9 animate-pulse rounded-md bg-muted" />
 					<div className="size-9 animate-pulse rounded-md bg-muted" />
 					<div className="h-9 w-14 animate-pulse rounded-md bg-muted" />
 				</div>
-				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 					{[
 						"skeleton-1",
 						"skeleton-2",
@@ -150,9 +153,9 @@ async function DashboardContent({ searchParams }: PageProps) {
 		<div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-4/5 flex-col gap-6">
 			<h1 className="font-bold text-2xl tracking-tight">Recipes</h1>
 
-			<div className="flex flex-1 flex-col justify-start gap-4 pt-[min(12vh,6rem)]">
+			<div className="flex flex-1 flex-col gap-4">
 				{(total > 0 || hasActiveFilters) && (
-					<div className="flex items-center justify-end gap-2">
+					<div className="flex flex-wrap items-center justify-end gap-2">
 						<SearchInput />
 						<RecipeFilters />
 						<RecipeSort />
@@ -161,37 +164,39 @@ async function DashboardContent({ searchParams }: PageProps) {
 				)}
 
 				{!recipes || recipes.length === 0 ? (
-					<Empty>
-						<EmptyHeader>
-							<EmptyMedia variant="icon">
-								<FileXCorner />
-							</EmptyMedia>
-							<EmptyTitle>
-								{hasActiveFilters ? "No matches found" : "No Recipes Yet"}
-							</EmptyTitle>
-							<EmptyDescription>
-								{hasActiveFilters
-									? "No recipes found matching your filters. Try adjusting them."
-									: "You haven't created any recipes yet. Get started by creating your first recipe."}
-							</EmptyDescription>
-						</EmptyHeader>
-						<EmptyContent>
-							{hasActiveFilters ? (
-								<Button variant="secondary">
-									<Link href="/dashboard">Clear Search</Link>
-								</Button>
-							) : (
-								<div className="flex gap-2">
-									<Button>
-										<Link href="/dashboard/create">Create recipe</Link>
+					<div className="flex flex-1 items-center justify-center">
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<FileXCorner />
+								</EmptyMedia>
+								<EmptyTitle>
+									{hasActiveFilters ? "No matches found" : "No Recipes Yet"}
+								</EmptyTitle>
+								<EmptyDescription>
+									{hasActiveFilters
+										? "No recipes found matching your filters. Try adjusting them."
+										: "You haven't created any recipes yet. Get started by creating your first recipe."}
+								</EmptyDescription>
+							</EmptyHeader>
+							<EmptyContent>
+								{hasActiveFilters ? (
+									<Button variant="secondary">
+										<Link href="/dashboard">Clear Search</Link>
 									</Button>
-									<Button variant="outline">
-										<Link href="/dashboard/import">Import recipe</Link>
-									</Button>
-								</div>
-							)}
-						</EmptyContent>
-					</Empty>
+								) : (
+									<div className="flex gap-2">
+										<Button>
+											<Link href="/dashboard/create">Create recipe</Link>
+										</Button>
+										<Button variant="outline">
+											<Link href="/dashboard/import">Import recipe</Link>
+										</Button>
+									</div>
+								)}
+							</EmptyContent>
+						</Empty>
+					</div>
 				) : (
 					<>
 						<RecipeGrid
@@ -203,7 +208,7 @@ async function DashboardContent({ searchParams }: PageProps) {
 						/>
 
 						{total > perPage && (
-							<Pagination className="mt-8 mb-10">
+							<Pagination className="mt-8 mb-24 md:mb-12">
 								<PaginationContent>
 									<PaginationItem>
 										{page <= 1 ? (

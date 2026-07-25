@@ -124,8 +124,8 @@ export default function RecipeScaler({
 
 	return (
 		<>
-			<div className="mt-6 flex flex-wrap items-center gap-2 text-gray-500">
-				{category && <span>{category} · </span>}
+			<div className="mt-4 flex flex-col gap-2 text-muted-foreground text-sm sm:mt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2 sm:text-base">
+				{category ? <span>{category}</span> : null}
 
 				<div className="flex items-center gap-2">
 					<span>Servings:</span>
@@ -139,13 +139,13 @@ export default function RecipeScaler({
 					/>
 				</div>
 
-				<span> · Prep: {prepTime ?? "—"} min</span>
+				<span>Prep: {prepTime ?? "—"} min</span>
 
-				<span> · Calories: {scaledCalories ?? "—"} kcal</span>
+				<span>Calories: {scaledCalories ?? "—"} kcal</span>
 			</div>
 
 			{tags && tags.length > 0 && (
-				<div className="mt-6 flex flex-wrap items-center gap-2">
+				<div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6">
 					{tags.map((t) => (
 						<span
 							key={t.name}
@@ -157,7 +157,7 @@ export default function RecipeScaler({
 				</div>
 			)}
 
-			<section style={{ marginTop: 24 }}>
+			<section className="mt-6">
 				<div className="flex items-center justify-between gap-4">
 					<H2>Ingredients</H2>
 					{checked.size > 0 ? (
@@ -176,7 +176,7 @@ export default function RecipeScaler({
 						{ingredientGroups.map((group, groupIndex) => (
 							<div key={`${group.section ?? "ungrouped"}-${groupIndex}`}>
 								{group.section ? (
-									<h3 className="mb-2 border-b pb-1 font-semibold">
+									<h3 className="mb-2 border-b pb-1 font-semibold text-sm sm:text-base">
 										{group.section}
 									</h3>
 								) : null}
@@ -185,7 +185,7 @@ export default function RecipeScaler({
 										const isChecked = checked.has(ing.id)
 										return (
 											<li key={ing.id}>
-												<label className="mb-2 flex cursor-pointer items-start gap-2">
+												<label className="mb-2 flex cursor-pointer items-start gap-3 text-sm sm:text-base">
 													<input
 														type="checkbox"
 														checked={isChecked}
@@ -194,7 +194,9 @@ export default function RecipeScaler({
 													/>
 													<span
 														className={
-															isChecked ? "line-through opacity-60" : undefined
+															isChecked
+																? "break-words line-through opacity-60"
+																: "break-words"
 														}
 													>
 														<span className="font-semibold">

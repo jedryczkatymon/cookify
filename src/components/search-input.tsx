@@ -30,7 +30,7 @@ export function SearchInput() {
 	}
 
 	return (
-		<div className="relative w-full sm:w-64">
+		<div className="relative w-full basis-full sm:w-64 sm:basis-auto">
 			<Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
 			<Input
 				type="search"
