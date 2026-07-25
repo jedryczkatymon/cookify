@@ -64,7 +64,7 @@ export function Navbar() {
 	const showAppNav = isDashboardPath(pathname)
 
 	return (
-		<nav className="flex max-w-full items-center justify-between px-4 pt-6 lg:px-20">
+		<nav className="relative flex max-w-full items-center justify-between px-4 pt-6 lg:px-20">
 			<Link
 				href={showAppNav ? "/dashboard" : "/"}
 				className="flex items-center gap-3 whitespace-nowrap"
@@ -75,7 +75,9 @@ export function Navbar() {
 
 			{showAppNav ? (
 				<SignedIn>
-					<DesktopNavLinks pathname={pathname} />
+					<div className="absolute left-1/2 -translate-x-1/2">
+						<DesktopNavLinks pathname={pathname} />
+					</div>
 				</SignedIn>
 			) : null}
 
