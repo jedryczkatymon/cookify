@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server"
 import { ShoppingList } from "@/components/meal-plan/shopping-list"
 import { aggregateShoppingIngredientsByDay } from "@/lib/aggregate-shopping-ingredients"
 import { getUserMealPlanWithIngredients } from "@/lib/get-meal-plan"
@@ -8,6 +9,7 @@ import {
 	toDateString,
 } from "@/lib/meal-plan-week"
 import { mealPlanRangeSchema } from "@/lib/schemas"
+import { getShoppingChecksMap } from "@/lib/shopping-check-mutations"
 
 type PageProps = {
 	searchParams: Promise<{ from?: string; to?: string; week?: string }>
@@ -44,12 +46,24 @@ export default async function ShoppingPage({ searchParams }: PageProps) {
 		})),
 	)
 
+	const { userId } = await auth()
+	const initialChecked = userId
+		? await getShoppingChecksMap(userId, from, to)
+		: {}
+
 	const weekLabel = formatWeekLabel(parseDateString(from), parseDateString(to))
 
 	return (
 		<div className="mx-auto w-4/5 space-y-6">
 			<h1 className="font-bold text-2xl tracking-tight">Shopping</h1>
-			<ShoppingList from={from} to={to} weekLabel={weekLabel} days={days} />
+			<ShoppingList
+				key={`${from}-${to}`}
+				from={from}
+				to={to}
+				weekLabel={weekLabel}
+				days={days}
+				initialChecked={initialChecked}
+			/>
 		</div>
 	)
 }

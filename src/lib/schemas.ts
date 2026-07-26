@@ -282,3 +282,16 @@ export const mealPlanRangeSchema = z.object({
 	from: isoDateString,
 	to: isoDateString,
 })
+
+/** Shopping line key: `{YYYY-MM-DD}::{product}::{unit}` */
+export const shoppingLineKeySchema = z
+	.string()
+	.min(1)
+	.regex(/^\d{4}-\d{2}-\d{2}::.+/, "Invalid shopping line key")
+
+export const shoppingToggleCheckSchema = z.object({
+	lineKey: shoppingLineKeySchema,
+	checked: z.boolean(),
+})
+
+export const shoppingClearChecksSchema = mealPlanRangeSchema

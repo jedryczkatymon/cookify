@@ -94,6 +94,7 @@ model User {
   recipes         Recipe[]
   uploads         Upload[]
   mealPlanEntries MealPlanEntry[]
+  shoppingChecks  ShoppingCheck[]
 }
 
 model MealPlanEntry {
@@ -108,5 +109,19 @@ model MealPlanEntry {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([userId, date])
+}
+
+model ShoppingCheck {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  date      DateTime @db.Date
+  product   String
+  unit      String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date, product, unit])
   @@index([userId, date])
 }

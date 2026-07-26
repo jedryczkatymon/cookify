@@ -2,7 +2,11 @@
 
 import { Check, ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState, useTransition } from "react"
+import {
+	clearShoppingChecksAction,
+	toggleShoppingCheckAction,
+} from "@/app/actions/shopping"
 import { Button } from "@/components/ui/button"
 import {
 	Empty,
@@ -20,10 +24,6 @@ import {
 } from "@/lib/meal-plan-week"
 import { cn } from "@/lib/utils"
 
-function storageKey(from: string, to: string) {
-	return `cookify:shopping:${from}:${to}`
-}
-
 function shoppingHref(from: string, to: string) {
 	return `/dashboard/shopping?from=${from}&to=${to}`
 }
@@ -33,14 +33,17 @@ export function ShoppingList({
 	to,
 	weekLabel,
 	days,
+	initialChecked,
 }: {
 	from: string
 	to: string
 	weekLabel: string
 	days: ShoppingDayGroup[]
+	initialChecked: Record<string, boolean>
 }) {
-	const [checked, setChecked] = useState<Record<string, boolean>>({})
-	const [hydrated, setHydrated] = useState(false)
+	const [checked, setChecked] =
+		useState<Record<string, boolean>>(initialChecked)
+	const [, startTransition] = useTransition()
 
 	const allLines = useMemo(() => days.flatMap((day) => day.lines), [days])
 	const isEmpty = days.length === 0
@@ -50,37 +53,47 @@ export function ShoppingList({
 	const nextFrom = toDateString(addDays(parseDateString(from), 7))
 	const nextTo = toDateString(addDays(parseDateString(to), 7))
 
-	useEffect(() => {
-		try {
-			const raw = localStorage.getItem(storageKey(from, to))
-			if (raw) {
-				const parsed = JSON.parse(raw) as Record<string, boolean>
-				setChecked(parsed)
-			} else {
-				setChecked({})
-			}
-		} catch {
-			setChecked({})
-		}
-		setHydrated(true)
-	}, [from, to])
-
-	useEffect(() => {
-		if (!hydrated) return
-		localStorage.setItem(storageKey(from, to), JSON.stringify(checked))
-	}, [checked, from, to, hydrated])
-
 	const remaining = useMemo(
 		() => allLines.filter((line) => !checked[line.key]).length,
 		[allLines, checked],
 	)
+	const hasChecks = remaining < allLines.length
 
 	function toggle(key: string) {
-		setChecked((prev) => ({ ...prev, [key]: !prev[key] }))
+		const nextChecked = !checked[key]
+		const previous = checked
+
+		setChecked((prev) => {
+			const next = { ...prev }
+			if (nextChecked) {
+				next[key] = true
+			} else {
+				delete next[key]
+			}
+			return next
+		})
+
+		startTransition(async () => {
+			const result = await toggleShoppingCheckAction({
+				lineKey: key,
+				checked: nextChecked,
+			})
+			if (!result.ok) {
+				setChecked(previous)
+			}
+		})
 	}
 
 	function clearChecked() {
+		const previous = checked
 		setChecked({})
+
+		startTransition(async () => {
+			const result = await clearShoppingChecksAction({ from, to })
+			if (!result.ok) {
+				setChecked(previous)
+			}
+		})
 	}
 
 	return (
@@ -109,7 +122,7 @@ export function ShoppingList({
 						variant="ghost"
 						size="sm"
 						onClick={clearChecked}
-						disabled={isEmpty || remaining === 0}
+						disabled={isEmpty || !hasChecks}
 					>
 						Clear checks
 					</Button>
